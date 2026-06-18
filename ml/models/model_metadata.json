@@ -1,0 +1,44 @@
+{
+  "feature_columns": [
+    "hour_ist",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week",
+    "dow_sin",
+    "dow_cos",
+    "month",
+    "time_slot",
+    "is_peak_hour",
+    "is_weekend",
+    "is_holiday",
+    "latitude",
+    "longitude",
+    "distance_to_center_km",
+    "is_main_corridor",
+    "corridor_event_freq",
+    "zone_event_freq",
+    "junction_event_freq",
+    "event_cause_encoded",
+    "cause_base_severity",
+    "priority_encoded",
+    "is_planned",
+    "has_description",
+    "description_length",
+    "hist_closure_rate_cause",
+    "hist_closure_rate_corridor",
+    "avg_resolution_time_cause"
+  ],
+  "n_features": 27,
+  "severity_metrics": {
+    "mae": 0.2652,
+    "rmse": 0.4722,
+    "r2": 0.9402
+  },
+  "duration_metrics": {
+    "mae": 8.0618,
+    "rmse": 13.1561,
+    "r2": 0.407
+  },
+  "training_samples": 8170,
+  "model_version": "v1.0.0"
+}
