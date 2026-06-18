@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventFlow AI — Flipkart Grid 6.0 Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050816;
+    --surface: #0B1020;
+    --card: rgba(11,16,32,0.8);
+    --border: rgba(255,255,255,0.08);
+    --blue: #3B82F6;
+    --cyan: #06B6D4;
+    --green: #10B981;
+    --red: #EF4444;
+    --orange: #FB923C;
+    --purple: #A78BFA;
+    --yellow: #FACC15;
+  }
+
+  html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: #E2E8F0;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Slide ─────────────────────────────────────── */
+  .slide {
+    width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+  }
+
+  /* ── Ambient orbs ──────────────────────────────── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    animation: drift 12s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-20px) scale(1.05); }
+    66% { transform: translate(-20px,15px) scale(0.95); }
+  }
+
+  /* ── Typography ────────────────────────────────── */
+  .mega { font-size: clamp(48px, 6vw, 80px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; }
+  .title { font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+  .subtitle { font-size: clamp(18px, 2vw, 24px); font-weight: 400; color: #94A3B8; line-height: 1.6; }
+  .label { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── Gradient text ─────────────────────────────── */
+  .grad-blue { background: linear-gradient(135deg, #60A5FA, #3B82F6, #2563EB); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-cyan { background: linear-gradient(135deg, #22D3EE, #06B6D4, #0891B2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-green { background: linear-gradient(135deg, #34D399, #10B981, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-multi { background: linear-gradient(135deg, #60A5FA, #A78BFA, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .grad-warm { background: linear-gradient(135deg, #FB923C, #EF4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ── Cards ──────────────────────────────────────── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── Badge ──────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .badge-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60A5FA; }
+  .badge-green { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #34D399; }
+  .badge-red { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #F87171; }
+  .badge-purple { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.25); color: #C4B5FD; }
+  .badge-cyan { background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25); color: #22D3EE; }
+  .badge-orange { background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.25); color: #FDBA74; }
+
+  /* ── Screenshot frame ──────────────────────────── */
+  .screenshot-frame {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+  .screenshot-frame .browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #EF4444; }
+  .dot-y { background: #FACC15; }
+  .dot-g { background: #10B981; }
+  .url-bar {
+    flex: 1;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    font-size: 11px;
+    color: #64748B;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .screenshot-frame img {
+    width: 100%;
+    display: block;
+  }
+
+  /* ── Metric strip ──────────────────────────────── */
+  .metric-card {
+    background: rgba(11,16,32,0.7);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    flex: 1;
+  }
+  .metric-val {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .metric-label {
+    font-size: 13px;
+    color: #64748B;
+    font-weight: 500;
+  }
+
+  /* ── Feature grid ──────────────────────────────── */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card .icon-box {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+  .feature-card h3 { font-size: 18px; font-weight: 700; color: #F1F5F9; margin-bottom: 8px; }
+  .feature-card p { font-size: 14px; color: #94A3B8; line-height: 1.6; }
+
+  /* ── Tech stack pills ──────────────────────────── */
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .tech-pill {
+    padding: 8px 18px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+    font-weight: 500;
+    color: #94A3B8;
+    transition: all 0.2s;
+  }
+
+  /* ── Slide number ──────────────────────────────── */
+  .slide-num {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.15);
+  }
+
+  /* ── Flow diagram ──────────────────────────────── */
+  .flow { display: flex; align-items: center; gap: 12px; }
+  .flow-step {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+  }
+  .flow-step .step-icon { font-size: 28px; margin-bottom: 10px; }
+  .flow-step h4 { font-size: 14px; font-weight: 700; color: #F1F5F9; margin-bottom: 4px; }
+  .flow-step p { font-size: 11px; color: #64748B; }
+  .flow-arrow { color: rgba(59,130,246,0.5); font-size: 20px; flex-shrink: 0; }
+
+  /* ── Print / PDF ───────────────────────────────── */
+  @media print {
+    .slide { page-break-after: always; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  /* ── Divider ───────────────────────────────────── */
+  .divider {
+    width: 60px;
+    height: 3px;
+    border-radius: 2px;
+    margin: 16px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 1: TITLE
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide" style="text-align:center;">
+  <div class="orb" style="width:600px;height:600px;background:#3B82F6;opacity:0.08;top:-200px;left:-100px;"></div>
+  <div class="orb" style="width:500px;height:500px;background:#A78BFA;opacity:0.06;bottom:-150px;right:-100px;animation-delay:3s;"></div>
+  <div class="orb" style="width:300px;height:300px;background:#06B6D4;opacity:0.05;top:40%;left:60%;animation-delay:6s;"></div>
+
+  <div style="margin-bottom: 24px;">
+    <span class="badge badge-blue" style="font-size:13px;">Flipkart Grid 6.0 — Prototype Round 2</span>
+  </div>
+
+  <h1 class="mega">
+    <span class="grad-multi">EventFlow</span> <span style="color:#F1F5F9;">AI</span>
+  </h1>
+
+  <div class="divider" style="background: linear-gradient(90deg, #3B82F6, #A78BFA, #EC4899); margin: 24px auto;"></div>
+
+  <p class="subtitle" style="max-width: 700px; margin: 0 auto 32px;">
+    Event-Driven Traffic Intelligence Platform<br>
+    <span style="color: #64748B;">Predict · Deploy · Divert · Optimize</span>
+  </p>
+
+  <div style="display:flex; gap:16px; justify-content:center; margin-top: 16px;">
+    <span class="badge badge-green">🟢 ML-Powered Prediction</span>
+    <span class="badge badge-cyan">🗺️ Geospatial Intelligence</span>
+    <span class="badge badge-purple">⚡ Real-Time Operations</span>
+  </div>
+
+  <div style="margin-top: 48px; color: #475569; font-size: 14px;">
+    Shiv Patel
+  </div>
+
+  <div class="slide-num">01 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 2: PROBLEM
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#EF4444;opacity:0.06;top:-100px;right:-100px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-red" style="margin-bottom: 16px; display: inline-flex;">⚠️ The Problem</span>
+    <h2 class="title" style="margin-bottom: 16px;">
+      <span class="grad-warm">₹1.5 Lakh Crore</span> lost annually<br>
+      to traffic congestion in India
+    </h2>
+    <p class="subtitle" style="max-width: 750px; margin-bottom: 48px;">
+      Political rallies, festivals, sports events, construction, and sudden gatherings create localized traffic breakdowns that existing systems cannot predict or manage proactively.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon-box" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.2);">🔴</div>
+        <h3>No Predictive Capability</h3>
+        <p>Current traffic management is purely reactive — responding to congestion after it happens, not before.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box" style="background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.2);">🟠</div>
+        <h3>Manual Resource Deployment</h3>
+        <p>Police, barricades, and tow units are deployed based on experience rather than data-driven optimization.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box" style="background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.2);">🟡</div>
+        <h3>No Impact Quantification</h3>
+        <p>Event organizers and authorities cannot estimate severity, duration, or ripple effects of an event on traffic.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-box" style="background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.2);">🟣</div>
+        <h3>Static Diversion Plans</h3>
+        <p>Alternate routes are communicated too late and don't account for dynamic congestion on diversion corridors.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">02 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 3: SOLUTION
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:600px;height:600px;background:#3B82F6;opacity:0.07;bottom:-200px;left:-100px;"></div>
+  <div class="orb" style="width:400px;height:400px;background:#10B981;opacity:0.05;top:-100px;right:100px;animation-delay:4s;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-blue" style="margin-bottom: 16px; display: inline-flex;">💡 Our Solution</span>
+    <h2 class="title" style="margin-bottom: 16px;">
+      <span class="grad-blue">EventFlow AI</span> — Intelligent<br>
+      Traffic Orchestration Platform
+    </h2>
+    <p class="subtitle" style="max-width: 750px; margin-bottom: 48px;">
+      We fuse machine learning with operations research to predict traffic disruptions <em>before</em> they peak, then automatically recommend optimized resource allocations and dynamic diversion routes.
+    </p>
+
+    <div class="flow" style="margin-bottom: 40px;">
+      <div class="flow-step">
+        <div class="step-icon">📡</div>
+        <h4>Ingest</h4>
+        <p>Real-time event data from Bengaluru Astram feed</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-icon">🧠</div>
+        <h4>Predict</h4>
+        <p>ML models forecast severity, closure, duration</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-icon">⚙️</div>
+        <h4>Optimize</h4>
+        <p>ILP engine deploys police, barricades, units</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-icon">🗺️</div>
+        <h4>Divert</h4>
+        <p>A* graph routing around affected junctions</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-icon">📊</div>
+        <h4>Command</h4>
+        <p>Dashboard for real-time decision making</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">03 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 4: ARCHITECTURE
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#A78BFA;opacity:0.06;top:-100px;left:30%;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-purple" style="margin-bottom: 16px; display: inline-flex;">🏗️ Architecture</span>
+    <h2 class="title" style="margin-bottom: 40px;">
+      <span class="grad-multi">Full-Stack</span> System Design
+    </h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 40px;">
+      <!-- Frontend -->
+      <div class="card" style="border-top: 2px solid var(--blue);">
+        <div class="label" style="color: var(--blue); margin-bottom: 16px;">Frontend</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="badge badge-blue">Next.js 14</span>
+          <span class="badge badge-cyan">TailwindCSS</span>
+          <span class="badge badge-green">Leaflet.js</span>
+          <span class="badge badge-purple">Recharts</span>
+          <span class="badge badge-orange">Framer Motion</span>
+        </div>
+        <p style="font-size:13px;color:#94A3B8;margin-top:16px;line-height:1.6;">
+          Glassmorphism dashboard with real-time incident feed, interactive geospatial map, and AI prediction simulator.
+        </p>
+      </div>
+
+      <!-- Backend -->
+      <div class="card" style="border-top: 2px solid var(--green);">
+        <div class="label" style="color: var(--green); margin-bottom: 16px;">Backend API</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="badge badge-green">FastAPI</span>
+          <span class="badge badge-blue">SQLAlchemy</span>
+          <span class="badge badge-cyan">PostgreSQL</span>
+          <span class="badge badge-purple">PostGIS</span>
+        </div>
+        <p style="font-size:13px;color:#94A3B8;margin-top:16px;line-height:1.6;">
+          RESTful API with Swagger docs. Handles events CRUD, prediction inference, resource optimization, and route diversion.
+        </p>
+      </div>
+
+      <!-- ML -->
+      <div class="card" style="border-top: 2px solid var(--orange);">
+        <div class="label" style="color: var(--orange); margin-bottom: 16px;">ML Engine</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          <span class="badge badge-orange">Gradient Boosting</span>
+          <span class="badge badge-red">Custom GBM</span>
+          <span class="badge badge-purple">27 Features</span>
+        </div>
+        <p style="font-size:13px;color:#94A3B8;margin-top:16px;line-height:1.6;">
+          Pure-Python gradient boosting (zero native C deps). 3 models: severity predictor, closure classifier, duration estimator.
+        </p>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <span class="badge badge-cyan" style="font-size:13px;">🐳 One-Command Docker Compose Deployment</span>
+    </div>
+  </div>
+  <div class="slide-num">04 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 5: ML MODELS
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#10B981;opacity:0.06;bottom:-150px;right:-100px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-green" style="margin-bottom: 16px; display: inline-flex;">🧠 Machine Learning</span>
+    <h2 class="title" style="margin-bottom: 12px;">
+      <span class="grad-green">3 Models</span>, 27 Features,<br>
+      8,173 Training Samples
+    </h2>
+    <p class="subtitle" style="max-width: 700px; margin-bottom: 40px;">
+      Custom Gradient Boosting implementation trained on Bengaluru Astram traffic incident data with temporal, spatial, and historical features.
+    </p>
+
+    <div style="display: flex; gap: 20px; margin-bottom: 40px;">
+      <!-- Severity -->
+      <div class="metric-card" style="border-top: 3px solid var(--blue);">
+        <div class="label" style="color: var(--blue); margin-bottom: 12px;">Severity Predictor</div>
+        <div class="metric-val grad-blue">0.94</div>
+        <div class="metric-label">R² Score</div>
+        <div style="margin-top:12px;font-size:12px;color:#64748B;">
+          MAE: 0.26 · RMSE: 0.47
+        </div>
+      </div>
+
+      <!-- Closure -->
+      <div class="metric-card" style="border-top: 3px solid var(--green);">
+        <div class="label" style="color: var(--green); margin-bottom: 12px;">Closure Classifier</div>
+        <div class="metric-val grad-green">92%</div>
+        <div class="metric-label">Accuracy</div>
+        <div style="margin-top:12px;font-size:12px;color:#64748B;">
+          Precision · Recall · AUC-ROC
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="metric-card" style="border-top: 3px solid var(--orange);">
+        <div class="label" style="color: var(--orange); margin-bottom: 12px;">Duration Estimator</div>
+        <div class="metric-val grad-warm">8.06h</div>
+        <div class="metric-label">MAE</div>
+        <div style="margin-top:12px;font-size:12px;color:#64748B;">
+          R²: 0.41 · RMSE: 13.15
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 20px 28px;">
+      <div class="label" style="color: var(--cyan); margin-bottom: 12px;">Feature Engineering Highlights</div>
+      <div style="display:flex; flex-wrap:wrap; gap: 8px;">
+        <span class="badge badge-blue">hour_sin/cos</span>
+        <span class="badge badge-cyan">distance_to_center</span>
+        <span class="badge badge-green">corridor_event_freq</span>
+        <span class="badge badge-orange">cause_base_severity</span>
+        <span class="badge badge-purple">hist_closure_rate</span>
+        <span class="badge badge-red">is_peak_hour</span>
+        <span class="badge" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#64748B;">+21 more</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">05 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 6: DEMO — DASHBOARD
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:400px;height:400px;background:#3B82F6;opacity:0.05;top:-80px;left:-50px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-blue" style="margin-bottom: 16px; display: inline-flex;">🖥️ Live Demo</span>
+    <h2 class="title" style="margin-bottom: 8px;">
+      <span class="grad-blue">Command Center</span> Dashboard
+    </h2>
+    <p class="subtitle" style="margin-bottom: 32px;">
+      Real-time incident intelligence with live KPIs, hourly traffic patterns, and active incident feed.
+    </p>
+
+    <div class="screenshot-frame">
+      <div class="browser-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="url-bar">localhost:3000</div>
+      </div>
+      <img src="dashboard.png" alt="EventFlow AI Dashboard">
+    </div>
+  </div>
+  <div class="slide-num">06 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 7: DEMO — PREDICTIONS
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:400px;height:400px;background:#A78BFA;opacity:0.05;bottom:-80px;right:-50px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-purple" style="margin-bottom: 16px; display: inline-flex;">⚡ AI Predictor</span>
+    <h2 class="title" style="margin-bottom: 8px;">
+      <span class="grad-multi">Impact Simulation</span> Engine
+    </h2>
+    <p class="subtitle" style="margin-bottom: 32px;">
+      Configure event parameters → ML predicts severity + closure probability → ILP optimizes resource deployment → Graph engine generates diversion routes.
+    </p>
+
+    <div class="screenshot-frame">
+      <div class="browser-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <div class="url-bar">localhost:3000/predictions</div>
+      </div>
+      <img src="predictions.png" alt="EventFlow AI Predictions">
+    </div>
+  </div>
+  <div class="slide-num">07 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 8: DEMO — MAP + ANALYTICS
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:400px;height:400px;background:#06B6D4;opacity:0.05;top:-50px;right:-50px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-cyan" style="margin-bottom: 16px; display: inline-flex;">🗺️ Geospatial + Analytics</span>
+    <h2 class="title" style="margin-bottom: 32px;">
+      <span class="grad-cyan">Spatial Intelligence</span> & Telemetry
+    </h2>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div class="screenshot-frame">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">localhost:3000/map</div>
+        </div>
+        <img src="map.png" alt="Geospatial Map">
+      </div>
+      <div class="screenshot-frame">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">localhost:3000/analytics</div>
+        </div>
+        <img src="analytics.png" alt="Analytics Dashboard">
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">08 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 9: KEY DIFFERENTIATORS
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide">
+  <div class="orb" style="width:500px;height:500px;background:#FACC15;opacity:0.04;bottom:-100px;left:-100px;"></div>
+
+  <div style="max-width: 1100px; width: 100%;">
+    <span class="badge badge-orange" style="margin-bottom: 16px; display: inline-flex;">🏆 Why EventFlow AI?</span>
+    <h2 class="title" style="margin-bottom: 40px;">
+      Key <span class="grad-warm">Differentiators</span>
+    </h2>
+
+    <div class="feature-grid">
+      <div class="feature-card" style="border-left: 3px solid var(--blue);">
+        <h3>🧪 Zero-Dependency ML</h3>
+        <p>Custom gradient boosting in pure Python — no scikit-learn, XGBoost, or C-library conflicts. Runs on any machine, any OS.</p>
+      </div>
+      <div class="feature-card" style="border-left: 3px solid var(--green);">
+        <h3>🔄 End-to-End Pipeline</h3>
+        <p>From raw Astram CSV → Feature Engineering → Model Training → API Inference → Dashboard Visualization. Complete data lifecycle.</p>
+      </div>
+      <div class="feature-card" style="border-left: 3px solid var(--orange);">
+        <h3>📐 Constraint-Based Optimization</h3>
+        <p>ILP-inspired resource allocation that minimizes deployment cost while meeting safety thresholds per severity tier.</p>
+      </div>
+      <div class="feature-card" style="border-left: 3px solid var(--purple);">
+        <h3>🗺️ Graph Route Diversion</h3>
+        <p>A*/Dijkstra pathfinding over Bengaluru's road network graph. Considers real-time congestion on alternate corridors.</p>
+      </div>
+      <div class="feature-card" style="border-left: 3px solid var(--cyan);">
+        <h3>🔁 Retrain-Ready Architecture</h3>
+        <p>One-command retrain script. As new events are resolved, operators retrain to adapt to evolving local patterns.</p>
+      </div>
+      <div class="feature-card" style="border-left: 3px solid var(--red);">
+        <h3>🐳 One-Command Deploy</h3>
+        <p><code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:12px;">docker-compose up --build</code> — Frontend, Backend, and Database all containerized and ready.</p>
+      </div>
+    </div>
+  </div>
+  <div class="slide-num">09 / 10</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     SLIDE 10: THANK YOU
+     ═══════════════════════════════════════════════════════ -->
+<section class="slide" style="text-align:center;">
+  <div class="orb" style="width:600px;height:600px;background:#3B82F6;opacity:0.08;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div class="orb" style="width:400px;height:400px;background:#A78BFA;opacity:0.06;top:20%;left:20%;animation-delay:3s;"></div>
+  <div class="orb" style="width:300px;height:300px;background:#EC4899;opacity:0.05;bottom:20%;right:20%;animation-delay:6s;"></div>
+
+  <h2 class="mega" style="margin-bottom: 16px;">
+    <span class="grad-multi">Thank You</span>
+  </h2>
+
+  <div class="divider" style="background: linear-gradient(90deg, #3B82F6, #A78BFA, #EC4899); margin: 24px auto;"></div>
+
+  <p class="subtitle" style="max-width: 600px; margin: 0 auto 40px;">
+    EventFlow AI — Making cities smarter,<br>one prediction at a time.
+  </p>
+
+  <div style="display:flex; gap:24px; justify-content:center; margin-bottom: 40px;">
+    <div class="metric-card">
+      <div class="metric-val" style="font-size:32px;"><span class="grad-blue">R² 0.94</span></div>
+      <div class="metric-label">Severity Prediction</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="font-size:32px;"><span class="grad-green">92%</span></div>
+      <div class="metric-label">Closure Accuracy</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val" style="font-size:32px;"><span class="grad-multi">8,173</span></div>
+      <div class="metric-label">Training Records</div>
+    </div>
+  </div>
+
+  <div style="color:#475569; font-size:14px;">
+    <p style="margin-bottom: 8px;">
+      <strong style="color:#94A3B8;">Repository:</strong> 
+      <span class="mono" style="color:#60A5FA;">github.com/Shiv-Patel-416/EventFlowAI</span>
+    </p>
+    <p>
+      <strong style="color:#94A3B8;">Built with:</strong> 
+      <span style="color:#64748B;">Next.js · FastAPI · Custom Gradient Boosting · Docker</span>
+    </p>
+  </div>
+
+  <div class="slide-num">10 / 10</div>
+</section>
+
+</body>
+</html>
