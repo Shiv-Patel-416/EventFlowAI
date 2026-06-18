@@ -55,6 +55,10 @@ export const analyticsService = {
   getOverview: async () => {
     const response = await api.get('/analytics/overview');
     return response.data;
+  },
+  getLeaderboard: async () => {
+    const response = await api.get('/leaderboard');
+    return response.data;
   }
 };
 

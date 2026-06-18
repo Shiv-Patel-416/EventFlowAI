@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/", icon: LayoutDashboard, label: "Overview", desc: "Command Center" },
   { href: "/map", icon: Map, label: "Live Map", desc: "Geospatial Intel" },
   { href: "/predictions", icon: Zap, label: "AI Predictor", desc: "Impact Simulation", badge: "AI" },
+  { href: "/leaderboard", icon: Shield, label: "Leaderboard", desc: "Station Efficiency" },
   { href: "/analytics", icon: BarChart3, label: "Analytics", desc: "Telemetry Data" },
 ];
 
