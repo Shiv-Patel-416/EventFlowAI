@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/",            icon: LayoutDashboard, label: "Overview",       desc: "Command Center" },
-  { href: "/map",         icon: Map,             label: "Live Map",       desc: "Geospatial Intel" },
-  { href: "/predictions", icon: Zap,             label: "AI Predictor",   desc: "Impact Simulation",  badge: "AI" },
-  { href: "/analytics",   icon: BarChart3,       label: "Analytics",      desc: "Telemetry Data" },
+  { href: "/", icon: LayoutDashboard, label: "Overview", desc: "Command Center" },
+  { href: "/map", icon: Map, label: "Live Map", desc: "Geospatial Intel" },
+  { href: "/predictions", icon: Zap, label: "AI Predictor", desc: "Impact Simulation", badge: "AI" },
+  { href: "/analytics", icon: BarChart3, label: "Analytics", desc: "Telemetry Data" },
 ];
 
 export function AppSidebar() {
@@ -21,26 +21,28 @@ export function AppSidebar() {
   return (
     <aside className="glass-sidebar w-[260px] flex-shrink-0 flex flex-col h-full z-20">
       {/* Logo */}
-      <div className="h-20 flex items-center px-6 border-b border-white/[0.06] relative overflow-hidden">
-        {/* Glow behind logo */}
-        <div className="absolute top-1/2 left-10 -translate-y-1/2 w-16 h-16 bg-blue-500/20 blur-2xl rounded-full pointer-events-none"></div>
-        
-        <div className="flex items-center gap-4 relative z-10">
-          <div className="relative w-10 h-10">
-            {/* Outer glow ring */}
-            <div className="absolute inset-0 bg-cyan-400/20 rounded-xl blur-md"></div>
-            {/* Logo box */}
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-400 to-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.4)] border border-white/20">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-white">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
-            </div>
+      <div className="h-20 flex items-center px-6 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3.5">
+          
+          {/* ATC / Radar Style Logo */}
+          <div className="relative w-12 h-12 rounded-[14px] bg-slate-900/50 border border-cyan-500/20 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.15)] overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-600/10"></div>
+            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 relative z-10">
+              <circle cx="12" cy="12" r="8" stroke="#06B6D4" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6"/>
+              <circle cx="12" cy="12" r="4" stroke="#3B82F6" strokeWidth="2"/>
+              <circle cx="12" cy="12" r="1" fill="#fff" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" strokeWidth="1.5" strokeLinecap="round" opacity="0.8"/>
+            </svg>
           </div>
-          <div>
-            <h1 className="text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-none tracking-tight shadow-sm">
-              EventFlow <span className="text-blue-400 font-bold">AI</span>
+
+          <div className="flex flex-col justify-center mt-0.5">
+            <h1 className="text-[20px] text-white leading-none tracking-tight flex items-center">
+              <span className="font-bold">EventFlow</span>
+              <span className="font-light text-cyan-400 ml-1">AI</span>
             </h1>
-            <p className="text-[11px] text-slate-400 font-medium mt-1 tracking-widest uppercase">Traffic Intelligence</p>
+            <p className="text-[9.5px] text-slate-400 font-bold mt-1.5 tracking-[0.2em] uppercase">
+              Traffic Intelligence
+            </p>
           </div>
         </div>
       </div>
@@ -54,11 +56,10 @@ export function AppSidebar() {
           return (
             <Link key={href} href={href}>
               <div className={`nav-item ${active ? "active" : ""}`}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                  active
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${active
                     ? "bg-blue-500/20 text-blue-400"
                     : "bg-white/[0.04] text-slate-500 group-hover:text-slate-300"
-                }`}>
+                  }`}>
                   <Icon size={16} />
                 </div>
                 <div className="flex-1 min-w-0">
