@@ -256,12 +256,21 @@
 
   /* ── Logo ──────────────────────────────────────── */
   .logo-box {
-    background: linear-gradient(135deg, #3B82F6, #06B6D4);
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 8px 32px rgba(6, 182, 212, 0.4), inset 0 2px 4px rgba(255,255,255,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .logo-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, rgba(6,182,212,0.1), rgba(37,99,235,0.1));
   }
   .logo-box-lg { width: 72px; height: 72px; border-radius: 20px; }
   .logo-box-lg svg { width: 40px; height: 40px; }
@@ -277,8 +286,15 @@
   }
   .slide-header .logo-box-sm {
     width: 32px; height: 32px; border-radius: 10px;
-    background: linear-gradient(135deg, #3B82F6, #06B6D4);
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
     display: inline-flex; align-items: center; justify-content: center; color: white;
+    position: relative; overflow: hidden;
+  }
+  .slide-header .logo-box-sm::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to bottom right, rgba(6,182,212,0.1), rgba(37,99,235,0.1));
   }
   .slide-header svg { width: 18px; height: 18px; }
   .slide-header .text { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
@@ -334,8 +350,11 @@
 
   <div style="margin-bottom: 32px;">
     <div class="logo-box logo-box-lg" style="margin-bottom: 24px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
       </svg>
     </div>
   </div>
@@ -366,7 +385,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -415,7 +439,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -474,7 +503,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -544,7 +578,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -615,7 +654,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -650,7 +694,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -685,7 +734,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -724,7 +778,12 @@
   <div class="bg-grid"></div>
   <div class="slide-header">
     <div class="logo-box-sm">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+      </svg>
     </div>
     <div class="text">EventFlow <span>AI</span></div>
   </div>
@@ -777,8 +836,11 @@
 
   <div style="margin-bottom: 32px;">
     <div class="logo-box logo-box-lg" style="margin-bottom: 24px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+      <svg viewBox="0 0 24 24" fill="none" style="position: relative; z-index: 10; width: 100%; height: 100%; transform: scale(0.6);">
+        <circle cx="12" cy="12" r="8" stroke="#06B6D4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.6"/>
+        <circle cx="12" cy="12" r="4" stroke="#3B82F6" stroke-width="2"/>
+        <circle cx="12" cy="12" r="1" fill="#fff" />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#06B6D4" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
       </svg>
     </div>
   </div>
