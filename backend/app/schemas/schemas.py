@@ -100,12 +100,25 @@ class PredictionRequest(BaseModel):
     description: Optional[str] = None
     requires_road_closure: bool = False
 
+class ConditionalForecastEntry(BaseModel):
+    """Step 4B: police_count → predicted duration → cost."""
+    police_deployed: int
+    estimated_duration_hours: float
+    estimated_cost_inr: float
+    efficiency_ratio: float
+
 class ResourceRecommendation(BaseModel):
     traffic_police: int
     barricades: int
     checkpoints: int
     emergency_units: int
     total_estimated_cost: float
+    # Step 4B ML fields
+    resource_efficiency_score: Optional[float] = None
+    optimization_method: Optional[str] = None
+    confidence: Optional[float] = None
+    conditional_forecast: Optional[List[ConditionalForecastEntry]] = None
+    explanation: Optional[str] = None
 
 class DiversionRoute(BaseModel):
     route_name: str
