@@ -160,6 +160,8 @@ class PredictionResponse(BaseModel):
     predicted_at: str
     # Step 3C: Cascade prediction field
     cascade_info: Optional[CascadeInfo] = None
+    # Real-Time Weather Integration
+    rainfall_mm: Optional[float] = None
 
 
 # ============ Resource Schemas ============

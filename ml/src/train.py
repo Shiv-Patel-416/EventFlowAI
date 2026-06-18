@@ -84,6 +84,7 @@ FEATURE_COLS = [
     'avg_resolution_time_cause',
     'cascade_probability',        # Step 3C
     'station_efficiency_score',   # Step 7
+    'rainfall_mm',                # Real-Time Weather Integration
 ]
 
 

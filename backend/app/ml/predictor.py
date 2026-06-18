@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from app.config import settings
 from app.ml.cascade_predictor import cascade_predictor, CascadeResult
 from app.ml.station_efficiency import load_leaderboard_cache, lookup_efficiency
+from app.ml.weather_service import get_current_rainfall_mm
 
 # Event cause severity mapping (must match training)
 CAUSE_SEVERITY = {
@@ -95,8 +96,9 @@ class MLPredictor:
     
     def _build_features(self, event_data: dict,
                         cascade_prob: float = DEFAULT_CASCADE_PROB,
-                        station_efficiency: float = 1.0) -> list:
-        """Build feature vector (27 base + cascade_probability + station_efficiency = 29 features)."""
+                        station_efficiency: float = 1.0,
+                        rainfall_mm: float = 0.0) -> list:
+        """Build feature vector (27 base + cascade_probability + station_efficiency + rainfall_mm = 30 features)."""
         # Parse datetime
         dt_str = event_data.get('start_datetime', '')
         try:
@@ -175,6 +177,8 @@ class MLPredictor:
             cascade_prob,
             # Feature 29: station efficiency score (Step 7)
             station_efficiency,
+            # Feature 30: Real-Time Weather (rainfall in mm)
+            rainfall_mm,
         ]
         return features
     
@@ -213,10 +217,16 @@ class MLPredictor:
         station = event_data.get('police_station', 'Unknown') or 'Unknown'
         station_eff = lookup_efficiency(station)
 
-        # ── Step 2: Build feature vector (29 features) ─────────────────────
+        # ── Step 8: Fetch real-time weather data ─────────────────────────────
+        lat = float(event_data.get('latitude', CITY_CENTER[0]))
+        lon = float(event_data.get('longitude', CITY_CENTER[1]))
+        rainfall = get_current_rainfall_mm(lat, lon)
+
+        # ── Step 2: Build feature vector (30 features) ─────────────────────
         features = self._build_features(event_data,
                                         cascade_prob=cascade_prob,
-                                        station_efficiency=station_eff)
+                                        station_efficiency=station_eff,
+                                        rainfall_mm=rainfall)
 
         # ── Step 3: Run ML models ──────────────────────────────────────
         if self._loaded and self.severity_model:

@@ -9,6 +9,7 @@ from app.ml.predictor import predictor
 from app.ml.resource_ml_predictor import resource_ml_predictor
 from app.optimization.resource_optimizer import optimize_resources
 from app.graph.diversion_engine import diversion_engine
+from app.ml.weather_service import get_current_rainfall_mm
 from datetime import datetime
 import uuid
 
@@ -32,11 +33,15 @@ async def predict_impact(data: PredictionRequest):
 
     event_data = data.model_dump()
 
-    # ── Step 1: Core ML prediction (severity + duration + cascade) ──
+    # ── Step 1: Core ML prediction (severity + duration + cascade + weather) ──
     prediction = predictor.predict(event_data)
     cascade_prob   = prediction.get('cascade_probability', 0.05)
     severity_score = prediction['severity_score']
     duration_hours = prediction['estimated_duration_hours']
+    rainfall       = get_current_rainfall_mm(
+        float(data.latitude or 12.9871), 
+        float(data.longitude or 77.5960)
+    )
 
     # ── Step 2: ML-based resource recommendation (Step 4B) ─────────
     ml_resources = resource_ml_predictor.predict_resources(
@@ -124,6 +129,7 @@ async def predict_impact(data: PredictionRequest):
         model_version=prediction['model_version'],
         predicted_at=datetime.now().isoformat(),
         cascade_info=cascade_info,
+        rainfall_mm=rainfall,
     )
 
 

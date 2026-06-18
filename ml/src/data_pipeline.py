@@ -23,6 +23,8 @@ from ml.src.cascade_analyzer import (
     save_matrix,
 )
 
+from ml.src.weather_simulator import get_historical_weather
+
 IST = timezone(timedelta(hours=5, minutes=30))
 CITY_CENTER = (12.9871, 77.5960)
 
@@ -371,6 +373,13 @@ def engineer_features(records):
             # Step 7: Station efficiency score — injected from leaderboard
             # Default 1.0 (neutral); overwritten after leaderboard is built
             'station_efficiency_score': 1.0,
+
+            # Real-Time Weather Integration
+            'rainfall_mm': get_historical_weather(
+                month=r['month'], 
+                hour=r['hour_ist'], 
+                seed_id=str(r.get('id', r.get('start_datetime', 'unknown')))
+            ),
         }
         
         features_list.append(feature)

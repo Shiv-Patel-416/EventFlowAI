@@ -29,7 +29,8 @@
     "hist_closure_rate_corridor",
     "avg_resolution_time_cause",
     "cascade_probability",
-    "station_efficiency_score"
+    "station_efficiency_score",
+    "rainfall_mm"
   ],
   "target_columns": [
     "severity_score",

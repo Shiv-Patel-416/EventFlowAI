@@ -28,31 +28,32 @@
     "hist_closure_rate_corridor",
     "avg_resolution_time_cause",
     "cascade_probability",
-    "station_efficiency_score"
+    "station_efficiency_score",
+    "rainfall_mm"
   ],
-  "n_features": 29,
+  "n_features": 30,
   "cascade_feature_included": true,
   "station_efficiency_included": true,
   "severity_metrics": {
     "mae": 0.1719,
-    "rmse": 0.3883,
-    "r2": 0.96,
-    "cv_r2_mean": 0.9556,
+    "rmse": 0.389,
+    "r2": 0.9598,
+    "cv_r2_mean": 0.9547,
     "cv_r2_std": 0.007
   },
   "closure_metrics": {
-    "accuracy": 0.8733,
-    "precision": 0.3349,
-    "recall": 0.5407,
-    "f1": 0.4136,
-    "auc_roc": 0.8161
+    "accuracy": 0.8794,
+    "precision": 0.3565,
+    "recall": 0.5704,
+    "f1": 0.4387,
+    "auc_roc": 0.8208
   },
   "duration_metrics": {
-    "mae": 6.1821,
-    "rmse": 13.0224,
-    "r2": 0.3437,
-    "cv_r2_mean": 0.5082,
-    "cv_r2_std": 0.0717
+    "mae": 6.3633,
+    "rmse": 13.3387,
+    "r2": 0.3114,
+    "cv_r2_mean": 0.5108,
+    "cv_r2_std": 0.0683
   },
   "training_samples": 8170,
   "model_version": "v3.0.0-xgboost",
