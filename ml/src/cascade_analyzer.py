@@ -179,12 +179,12 @@ def build_cooccurrence_matrix(raw_path: str) -> dict:
 
     # ── Summary ──────────────────────────────────────
     print(f"\nUnique cascade pairs found: {len(pair_counts)}")
-    print("\nTop 10 cascade pairs (junction_A → junction_B):")
+    print("\nTop 10 cascade pairs (junction_A -> junction_B):")
     top_pairs = sorted(pair_counts.items(), key=lambda x: -x[1])[:10]
     for pair_key, count in top_pairs:
         a, b = pair_key.split("||")
         rate = pair_rates.get(pair_key, 0)
-        print(f"  {a:25s} → {b:25s}  count={count:3d}  rate={rate:.3f}")
+        print(f"  {a:25s} -> {b:25s}  count={count:3d}  rate={rate:.3f}")
 
     print("\nCascade probability by event cause:")
     for cause, rate in sorted(cause_cascade_rates.items(), key=lambda x: -x[1]):
@@ -291,7 +291,7 @@ def save_matrix(matrix: dict, output_dir: str) -> str:
     path = os.path.join(output_dir, "cascade_matrix.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(matrix, f, indent=2)
-    print(f"Cascade matrix saved → {path}")
+    print(f"Cascade matrix saved -> {path}")
     return path
 
 

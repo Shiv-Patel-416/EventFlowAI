@@ -12,6 +12,10 @@ import pickle
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 
+import sys
+# Ensure the root directory is in sys.path so 'ml.src...' imports work
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 # Import cascade analyzer for co-occurrence-based feature injection
 from ml.src.cascade_analyzer import (
     build_cooccurrence_matrix,

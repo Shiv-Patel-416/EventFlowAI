@@ -27,7 +27,9 @@
     "description_length",
     "hist_closure_rate_cause",
     "hist_closure_rate_corridor",
-    "avg_resolution_time_cause"
+    "avg_resolution_time_cause",
+    "cascade_probability",
+    "station_efficiency_score"
   ],
   "target_columns": [
     "severity_score",

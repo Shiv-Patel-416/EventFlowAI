@@ -26,19 +26,39 @@
     "description_length",
     "hist_closure_rate_cause",
     "hist_closure_rate_corridor",
-    "avg_resolution_time_cause"
+    "avg_resolution_time_cause",
+    "cascade_probability",
+    "station_efficiency_score"
   ],
-  "n_features": 27,
+  "n_features": 29,
+  "cascade_feature_included": true,
+  "station_efficiency_included": true,
   "severity_metrics": {
-    "mae": 0.2652,
-    "rmse": 0.4722,
-    "r2": 0.9402
+    "mae": 0.1719,
+    "rmse": 0.3883,
+    "r2": 0.96,
+    "cv_r2_mean": 0.9556,
+    "cv_r2_std": 0.007
+  },
+  "closure_metrics": {
+    "accuracy": 0.8733,
+    "precision": 0.3349,
+    "recall": 0.5407,
+    "f1": 0.4136,
+    "auc_roc": 0.8161
   },
   "duration_metrics": {
-    "mae": 8.0618,
-    "rmse": 13.1561,
-    "r2": 0.407
+    "mae": 6.1821,
+    "rmse": 13.0224,
+    "r2": 0.3437,
+    "cv_r2_mean": 0.5082,
+    "cv_r2_std": 0.0717
   },
   "training_samples": 8170,
-  "model_version": "v1.0.0"
+  "model_version": "v3.0.0-xgboost",
+  "algorithms": {
+    "severity": "XGBRegressor(n_estimators=800)",
+    "closure": "XGBClassifier(SMOTE+scale_pos_weight)",
+    "duration": "XGBRegressor(log1p transform, n_estimators=1000)"
+  }
 }
