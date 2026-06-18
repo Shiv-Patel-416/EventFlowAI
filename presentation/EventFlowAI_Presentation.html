@@ -228,8 +228,22 @@
 
   /* ── Print / PDF ───────────────────────────────── */
   @media print {
-    .slide { page-break-after: always; }
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page {
+      margin: 0;
+      size: landscape;
+    }
+    html, body {
+      background-color: #050816 !important;
+      color: #E2E8F0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    .slide { 
+      background-color: #050816 !important;
+      page-break-after: always;
+      page-break-inside: avoid;
+      height: 100vh;
+    }
   }
 
   /* ── Divider ───────────────────────────────────── */
