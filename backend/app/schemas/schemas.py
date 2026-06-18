@@ -114,6 +114,26 @@ class DiversionRoute(BaseModel):
     congestion_level: str
     coordinates: List[List[float]]
 
+
+class CascadeInfo(BaseModel):
+    """Congestion Cascade Prediction result (Step 3C)."""
+    cascade_probability: float = Field(
+        description="Probability [0–1] that this event triggers secondary incidents"
+    )
+    risk_level: str = Field(
+        description="Low | Medium | High | Critical"
+    )
+    likely_affected_junctions: List[str] = Field(
+        default_factory=list,
+        description="Junctions historically correlated with this origin"
+    )
+    duration_multiplier: float = Field(
+        description="Estimated stretch factor on resolution time due to cascades"
+    )
+    explanation: str = Field(
+        description="Human-readable cascade risk summary"
+    )
+
 class PredictionResponse(BaseModel):
     prediction_id: str
     severity_score: float
@@ -125,6 +145,8 @@ class PredictionResponse(BaseModel):
     diversion_routes: List[DiversionRoute]
     model_version: str
     predicted_at: str
+    # Step 3C: Cascade prediction field
+    cascade_info: Optional[CascadeInfo] = None
 
 
 # ============ Resource Schemas ============

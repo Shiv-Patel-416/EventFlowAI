@@ -1,6 +1,7 @@
 """
 EventFlow AI — Model Training
-Trains XGBoost + LightGBM models for severity prediction and closure classification.
+Trains severity, closure, and duration models.
+Duration model now includes cascade_probability as a feature (Step 3C).
 """
 
 import csv
@@ -173,6 +174,8 @@ def prepare_training_data(features):
         'has_description', 'description_length',
         'hist_closure_rate_cause', 'hist_closure_rate_corridor',
         'avg_resolution_time_cause',
+        # Step 3C: Cascade feature — explains long-tail durations
+        'cascade_probability',
     ]
     
     X = []
@@ -378,11 +381,12 @@ def train_models(features_path, models_dir):
     model_meta = {
         'feature_columns': feature_cols,
         'n_features': len(feature_cols),
+        'cascade_feature_included': True,
         'severity_metrics': results['severity'],
         'closure_metrics': results['closure'],
         'duration_metrics': results['duration'],
         'training_samples': len(X),
-        'model_version': 'v1.0.0',
+        'model_version': 'v2.0.0',  # bumped: cascade feature added
     }
     
     with open(os.path.join(models_dir, 'model_metadata.json'), 'w') as f:
