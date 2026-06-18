@@ -21,14 +21,26 @@ export function AppSidebar() {
   return (
     <aside className="glass-sidebar w-[260px] flex-shrink-0 flex flex-col h-full z-20">
       {/* Logo */}
-      <div className="h-16 flex items-center px-5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <Activity size={16} className="text-white" />
+      <div className="h-20 flex items-center px-6 border-b border-white/[0.06] relative overflow-hidden">
+        {/* Glow behind logo */}
+        <div className="absolute top-1/2 left-10 -translate-y-1/2 w-16 h-16 bg-blue-500/20 blur-2xl rounded-full pointer-events-none"></div>
+        
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="relative w-10 h-10">
+            {/* Outer glow ring */}
+            <div className="absolute inset-0 bg-cyan-400/20 rounded-xl blur-md"></div>
+            {/* Logo box */}
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-400 to-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.4)] border border-white/20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-white">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </div>
           </div>
           <div>
-            <h1 className="text-[15px] font-bold text-white leading-none tracking-tight">EventFlow</h1>
-            <p className="text-[10px] text-blue-400 font-medium mt-0.5 tracking-wide">AI Traffic Intelligence</p>
+            <h1 className="text-[18px] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-300 leading-none tracking-tight shadow-sm">
+              EventFlow <span className="text-blue-400 font-bold">AI</span>
+            </h1>
+            <p className="text-[11px] text-slate-400 font-medium mt-1 tracking-widest uppercase">Traffic Intelligence</p>
           </div>
         </div>
       </div>
