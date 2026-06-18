@@ -176,6 +176,8 @@ def prepare_training_data(features):
         'avg_resolution_time_cause',
         # Step 3C: Cascade feature — explains long-tail durations
         'cascade_probability',
+        # Step 7: Station efficiency score — localises duration per jurisdiction
+        'station_efficiency_score',
     ]
     
     X = []

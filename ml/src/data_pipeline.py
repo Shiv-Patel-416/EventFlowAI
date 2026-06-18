@@ -363,6 +363,10 @@ def engineer_features(records):
             # Cascade feature (Step 3C) — injected after co-occurrence analysis
             # Placeholder; will be overwritten by compute_cascade_scores()
             'cascade_probability': 0.05,
+
+            # Step 7: Station efficiency score — injected from leaderboard
+            # Default 1.0 (neutral); overwritten after leaderboard is built
+            'station_efficiency_score': 1.0,
         }
         
         features_list.append(feature)

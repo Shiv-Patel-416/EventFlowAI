@@ -6,6 +6,7 @@ import math
 from datetime import datetime, timedelta
 from app.config import settings
 from app.ml.cascade_predictor import cascade_predictor, CascadeResult
+from app.ml.station_efficiency import load_leaderboard_cache, lookup_efficiency
 
 # Event cause severity mapping (must match training)
 CAUSE_SEVERITY = {
@@ -77,6 +78,13 @@ class MLPredictor:
             "processed", "cascade_matrix.json"
         )
         self._cascade_ready = cascade_predictor.load_matrix(cascade_matrix_path)
+
+        # Step 7: Load police station leaderboard for efficiency feature
+        leaderboard_path = os.path.join(
+            os.path.dirname(models_dir), "data",
+            "processed", "leaderboard.json"
+        )
+        load_leaderboard_cache(leaderboard_path)
     
     def _haversine(self, lat1, lon1, lat2, lon2):
         R = 6371
@@ -85,8 +93,10 @@ class MLPredictor:
         a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
         return R * 2 * math.asin(math.sqrt(a))
     
-    def _build_features(self, event_data: dict, cascade_prob: float = DEFAULT_CASCADE_PROB) -> list:
-        """Build feature vector from event data (27 base features + cascade_probability)."""
+    def _build_features(self, event_data: dict,
+                        cascade_prob: float = DEFAULT_CASCADE_PROB,
+                        station_efficiency: float = 1.0) -> list:
+        """Build feature vector (27 base + cascade_probability + station_efficiency = 29 features)."""
         # Parse datetime
         dt_str = event_data.get('start_datetime', '')
         try:
@@ -161,10 +171,11 @@ class MLPredictor:
             has_desc, desc_len,
             closure_rate_cause, closure_rate_corridor,
             avg_res,
-            # Feature 28 (Step 3C): cascade probability
+            # Feature 28: cascade probability (Step 3C)
             cascade_prob,
+            # Feature 29: station efficiency score (Step 7)
+            station_efficiency,
         ]
-        
         return features
     
     def predict(self, event_data: dict) -> dict:
@@ -198,8 +209,14 @@ class MLPredictor:
             cascade_prob   = DEFAULT_CASCADE_PROB
             cascade_result = None
 
-        # ── Step 2: Build feature vector (28 features incl. cascade) ──
-        features = self._build_features(event_data, cascade_prob=cascade_prob)
+        # ── Step 7: Look up police station efficiency score ──────────────────
+        station = event_data.get('police_station', 'Unknown') or 'Unknown'
+        station_eff = lookup_efficiency(station)
+
+        # ── Step 2: Build feature vector (29 features) ─────────────────────
+        features = self._build_features(event_data,
+                                        cascade_prob=cascade_prob,
+                                        station_efficiency=station_eff)
 
         # ── Step 3: Run ML models ──────────────────────────────────────
         if self._loaded and self.severity_model:
