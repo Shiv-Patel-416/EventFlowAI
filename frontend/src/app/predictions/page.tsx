@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { predictionService } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+import {
   Zap, ShieldAlert, Users, Navigation2,
   HardHat, Car, Tent, MapPin, ArrowRight,
   AlertTriangle, CheckCircle2, Activity,
