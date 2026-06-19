@@ -32,12 +32,13 @@ HIST_CLOSURE_RATE = {
     "protest": 0.400, "debris": 0.083, "fog_low_visibility": 0.0,
 }
 
+# AVG_RESOLUTION in HOURS (converted from raw minutes in training data)
 AVG_RESOLUTION = {
-    "vehicle_breakdown": 0.97, "others": 93.57, "pot_holes": 173.25,
-    "construction": 118.02, "water_logging": 117.20, "accident": 0.80,
-    "tree_fall": 79.41, "road_conditions": 172.08, "congestion": 1.24,
-    "public_event": 4.0, "procession": 0.91, "vip_movement": 3.0,
-    "protest": 0.41, "debris": 382.97, "fog_low_visibility": 2.0,
+    "vehicle_breakdown": 1.0,  "others": 1.6,  "pot_holes": 2.9,
+    "construction": 2.0,       "water_logging": 2.0, "accident": 0.8,
+    "tree_fall": 1.3,          "road_conditions": 2.9, "congestion": 1.2,
+    "public_event": 4.0,       "procession": 1.5, "vip_movement": 3.0,
+    "protest": 0.7,            "debris": 6.4, "fog_low_visibility": 2.0,
 }
 
 CORRIDOR_FREQ = {
@@ -46,6 +47,7 @@ CORRIDOR_FREQ = {
 }
 
 CITY_CENTER = (12.9871, 77.5960)
+DEFAULT_CASCADE_PROB = 0.05
 
 class MLPredictor:
     def __init__(self):
@@ -246,23 +248,67 @@ class MLPredictor:
             if cascade_result:
                 duration *= cascade_result.duration_multiplier
 
-        # ── Step 4: Clamp values ───────────────────────────────────────
-        severity     = max(0, min(10, severity))
-        closure_prob = max(0, min(1, closure_prob))
-        duration     = max(0.1, min(72, duration))
+        # ── Step 4: Clamp RAW ML outputs ─────────────────────────────────────
+        severity         = max(0.0, min(10.0, severity))
+        closure_prob     = max(0.0, min(1.0,  closure_prob))
+        # Cap raw ML duration at 12h max — real duration built formulaically in Step 5
+        raw_ml_duration  = max(0.1, min(12.0, duration))
 
-        # ── Step 5: Event-specific hard boosts ────────────────────────
+        # ── Step 5: Location-aware, formula-driven scoring ───────────────────
         cause = event_data.get('event_cause', '').lower()
-        if cause in ('public_event', 'procession', 'vip_movement', 'protest'):
-            severity = max(severity, 6.0)
-            if cause == 'vip_movement':
-                severity     = max(severity, 8.0)
-                closure_prob = max(closure_prob, 0.8)
+        lat   = float(event_data.get('latitude',  CITY_CENTER[0]))
+        lon   = float(event_data.get('longitude', CITY_CENTER[1]))
+        dist_km = self._haversine(lat, lon, CITY_CENTER[0], CITY_CENTER[1])
 
+        # LOCATION MULTIPLIER: linear decay from city center
+        # location_mult = max(0.55, 1.0 - dist_km × 0.015)
+        # MG Road (1.2km)   → 0.982   Whitefield (16km) → 0.760
+        # Electronic City (17km) → 0.745   Hebbal (8km)  → 0.880
+        location_mult = max(0.55, 1.0 - dist_km * 0.015)
+
+        # SEVERITY: blend ML output with cause baseline, scaled by location
+        base_cause_sev = CAUSE_SEVERITY.get(cause, 3.0)
+        blended_sev = 0.6 * severity + 0.4 * (base_cause_sev * location_mult)
+
+        if cause in ('public_event', 'procession', 'protest'):
+            blended_sev = max(blended_sev, 5.0 * location_mult)
+        if cause == 'vip_movement':
+            blended_sev  = max(blended_sev, 7.5 * location_mult)
+            closure_prob = max(closure_prob, 0.75 * location_mult)
         if event_data.get('requires_road_closure'):
-            severity     *= 1.2
-            severity      = min(severity, 10.0)
-            closure_prob  = max(closure_prob, 0.7)
+            blended_sev  += 1.5 * location_mult
+            closure_prob  = max(closure_prob, 0.70)
+        priority = event_data.get('priority', 'Low')
+        if priority == 'Critical':
+            blended_sev += 0.5
+        severity = min(10.0, max(0.0, blended_sev))
+
+        # DURATION FORMULA ────────────────────────────────────────────────
+        # Base = ML output (capped 12h) — primary predictor
+        # hist_avg (now in hours) is a small correction weight only
+        hist_avg  = AVG_RESOLUTION.get(cause, 2.0)
+        base_dur  = 0.75 * raw_ml_duration + 0.25 * hist_avg
+
+        # D_final = base × location_factor × cause_factor × closure_factor × priority_factor
+        # location: center zones take longer to clear (more cascade, more traffic layers)
+        # formula: 1.0 + 0.20 * location_mult  →  center=×1.196, outskirts=×1.110
+        loc_factor      = 1.0 + 0.20 * location_mult
+
+        # closure adds delay proportional to how busy the location is
+        closure_factor  = (1.0 + 0.15 * location_mult) if event_data.get('requires_road_closure') else 1.0
+
+        cause_factors   = {
+            'vip_movement': 1.30, 'procession': 1.20, 'protest': 1.15,
+            'public_event': 1.10, 'accident': 1.08, 'construction': 1.05,
+            'tree_fall': 1.05,  'water_logging': 1.03,
+        }
+        cause_factor    = cause_factors.get(cause, 1.0)
+        priority_factor = 1.10 if priority == 'Critical' else (1.05 if priority == 'High' else 1.0)
+        # Cascade: cap multiplier at 1.3 to avoid runaway
+        cascade_mult    = min(1.30, cascade_result.duration_multiplier if cascade_result else 1.0)
+
+        duration = base_dur * loc_factor * cause_factor * closure_factor * priority_factor * cascade_mult
+        duration = max(0.5, min(20.0, duration))
 
         # ── Step 6: Labels and confidence ────────────────────────────
         if severity <= 3:

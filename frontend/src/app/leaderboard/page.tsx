@@ -78,8 +78,13 @@ export default function LeaderboardPage() {
             
             {/* Top 3 Podium */}
             <div className="grid grid-cols-3 gap-4 mb-6">
-              {data?.leaderboard.slice(0, 3).map((station: any, idx: number) => (
-                <div key={station.station} className="glass-card relative overflow-hidden group">
+              {data?.leaderboard.slice(0, 3).map((station: any, idx: number) => {
+                const stationName = station.station || station.police_station;
+                const eventCount = station.event_count || station.resolved_events || 0;
+                const delay = station.avg_delay_hours ?? ((station.avg_resolution_hours || 0) - (station.baseline_hours || 0));
+                
+                return (
+                <div key={stationName} className="glass-card relative overflow-hidden group">
                   <div className={`absolute top-0 left-0 w-full h-1 ${idx === 0 ? 'bg-amber-400' : idx === 1 ? 'bg-slate-300' : 'bg-orange-400'}`}></div>
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-4">
@@ -92,25 +97,25 @@ export default function LeaderboardPage() {
                       </div>
                       <Medal size={20} className={idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : 'text-orange-400'} />
                     </div>
-                    <h3 className="text-[15px] font-bold text-white mb-1 truncate">{station.station}</h3>
+                    <h3 className="text-[15px] font-bold text-white mb-1 truncate">{stationName}</h3>
                     <div className="flex items-center gap-2 text-[12px] text-slate-400">
-                      <Activity size={12} /> {station.event_count} incidents resolved
+                      <Activity size={12} /> {eventCount} incidents resolved
                     </div>
                     
                     <div className="mt-4 pt-4 border-t border-white/[0.06] flex justify-between items-end">
                       <div>
                         <p className="text-[10px] text-slate-500 uppercase">Efficiency Score</p>
-                        <p className="mono text-[18px] font-bold text-emerald-400">{station.efficiency_score.toFixed(2)}</p>
+                        <p className="mono text-[18px] font-bold text-emerald-400">{station.efficiency_score?.toFixed(2) || "1.00"}</p>
                       </div>
                       <div className="text-right">
                         <span className="badge badge-green flex items-center gap-1">
-                          <TrendingDown size={10} /> {Math.abs(station.avg_delay_hours).toFixed(1)}h faster
+                          <TrendingDown size={10} /> {Math.abs(delay).toFixed(1)}h {delay < 0 ? 'faster' : 'slower'}
                         </span>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
 
             {/* Full List */}
@@ -135,20 +140,24 @@ export default function LeaderboardPage() {
                       const isGood = station.efficiency_score <= 1.0;
                       const isWarning = station.efficiency_score > 1.1;
                       
+                      const stationName = station.station || station.police_station;
+                      const eventCount = station.event_count || station.resolved_events || 0;
+                      const delay = station.avg_delay_hours ?? ((station.avg_resolution_hours || 0) - (station.baseline_hours || 0));
+
                       return (
-                        <tr key={station.station} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group">
+                        <tr key={stationName} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group">
                           <td className="p-4 mono text-slate-400">#{station.rank}</td>
-                          <td className="p-4 font-medium text-slate-200">{station.station}</td>
-                          <td className="p-4 mono text-right text-slate-400">{station.event_count}</td>
+                          <td className="p-4 font-medium text-slate-200">{stationName}</td>
+                          <td className="p-4 mono text-right text-slate-400">{eventCount}</td>
                           <td className="p-4 text-right">
                             <span className={`mono px-2 py-1 rounded text-[11px] ${
                               isGood ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
                             }`}>
-                              {station.avg_delay_hours > 0 ? '+' : ''}{station.avg_delay_hours.toFixed(1)}h
+                              {delay > 0 ? '+' : ''}{delay.toFixed(1)}h
                             </span>
                           </td>
                           <td className="p-4 mono text-right font-bold text-white">
-                            {station.efficiency_score.toFixed(2)}
+                            {station.efficiency_score?.toFixed(2) || "1.00"}
                           </td>
                           <td className="p-4 text-center">
                             <div className="flex justify-center">
