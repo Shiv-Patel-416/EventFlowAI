@@ -143,6 +143,7 @@ async def model_info():
         "cascade_matrix_loaded":  predictor._cascade_ready,
         "core_model_version":     (predictor.metadata.get('model_version','unknown')
                                    if predictor.metadata else 'not loaded'),
+        "metrics":                predictor.metadata.get('metrics', {}) if predictor.metadata else {},
         "resource_model_version": resource_meta.get('model_version','not trained'),
         "resource_efficiency":    resource_meta.get('overall_resource_efficiency'),
         "algorithms_evaluated":   resource_meta.get('algorithms_evaluated',[]),
