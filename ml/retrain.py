@@ -38,6 +38,10 @@ def prepare_data(features):
         'has_description', 'description_length',
         'hist_closure_rate_cause', 'hist_closure_rate_corridor',
         'avg_resolution_time_cause',
+        # Step 3C: Cascade feature — injected by cascade_analyzer
+        'cascade_probability',
+        # Step 7: Station efficiency score
+        'station_efficiency_score',
     ]
     
     X, y_sev, y_clo, y_dur = [], [], [], []

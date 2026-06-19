@@ -100,12 +100,25 @@ class PredictionRequest(BaseModel):
     description: Optional[str] = None
     requires_road_closure: bool = False
 
+class ConditionalForecastEntry(BaseModel):
+    """Step 4B: police_count → predicted duration → cost."""
+    police_deployed: int
+    estimated_duration_hours: float
+    estimated_cost_inr: float
+    efficiency_ratio: float
+
 class ResourceRecommendation(BaseModel):
     traffic_police: int
     barricades: int
     checkpoints: int
     emergency_units: int
     total_estimated_cost: float
+    # Step 4B ML fields
+    resource_efficiency_score: Optional[float] = None
+    optimization_method: Optional[str] = None
+    confidence: Optional[float] = None
+    conditional_forecast: Optional[List[ConditionalForecastEntry]] = None
+    explanation: Optional[str] = None
 
 class DiversionRoute(BaseModel):
     route_name: str
@@ -113,6 +126,26 @@ class DiversionRoute(BaseModel):
     estimated_time_min: float
     congestion_level: str
     coordinates: List[List[float]]
+
+
+class CascadeInfo(BaseModel):
+    """Congestion Cascade Prediction result (Step 3C)."""
+    cascade_probability: float = Field(
+        description="Probability [0–1] that this event triggers secondary incidents"
+    )
+    risk_level: str = Field(
+        description="Low | Medium | High | Critical"
+    )
+    likely_affected_junctions: List[str] = Field(
+        default_factory=list,
+        description="Junctions historically correlated with this origin"
+    )
+    duration_multiplier: float = Field(
+        description="Estimated stretch factor on resolution time due to cascades"
+    )
+    explanation: str = Field(
+        description="Human-readable cascade risk summary"
+    )
 
 class PredictionResponse(BaseModel):
     prediction_id: str
@@ -125,6 +158,10 @@ class PredictionResponse(BaseModel):
     diversion_routes: List[DiversionRoute]
     model_version: str
     predicted_at: str
+    # Step 3C: Cascade prediction field
+    cascade_info: Optional[CascadeInfo] = None
+    # Real-Time Weather Integration
+    rainfall_mm: Optional[float] = None
 
 
 # ============ Resource Schemas ============

@@ -1,6 +1,7 @@
 """
 EventFlow AI — Data Pipeline
 Cleans raw Astram event data and engineers features for ML models.
+Includes Cascade Probability injection (Step 3C).
 """
 
 import csv
@@ -10,6 +11,19 @@ import os
 import pickle
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
+
+import sys
+# Ensure the root directory is in sys.path so 'ml.src...' imports work
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+# Import cascade analyzer for co-occurrence-based feature injection
+from ml.src.cascade_analyzer import (
+    build_cooccurrence_matrix,
+    compute_cascade_scores,
+    save_matrix,
+)
+
+from ml.src.weather_simulator import get_historical_weather
 
 IST = timezone(timedelta(hours=5, minutes=30))
 CITY_CENTER = (12.9871, 77.5960)
@@ -351,6 +365,21 @@ def engineer_features(records):
             'hist_closure_rate_cause': round(hist_closure_rate_cause, 4),
             'hist_closure_rate_corridor': round(hist_closure_rate_corridor, 4),
             'avg_resolution_time_cause': round(avg_res_time, 2),
+
+            # Cascade feature (Step 3C) — injected after co-occurrence analysis
+            # Placeholder; will be overwritten by compute_cascade_scores()
+            'cascade_probability': 0.05,
+
+            # Step 7: Station efficiency score — injected from leaderboard
+            # Default 1.0 (neutral); overwritten after leaderboard is built
+            'station_efficiency_score': 1.0,
+
+            # Real-Time Weather Integration
+            'rainfall_mm': get_historical_weather(
+                month=r['month'], 
+                hour=r['hour_ist'], 
+                seed_id=str(r.get('id', r.get('start_datetime', 'unknown')))
+            ),
         }
         
         features_list.append(feature)
@@ -388,33 +417,54 @@ def save_processed(features, output_dir):
     return filepath
 
 def run_pipeline(raw_path, output_dir):
-    """Run the complete data pipeline."""
+    """Run the complete data pipeline, including cascade feature injection."""
     print("=" * 60)
-    print("EventFlow AI — Data Pipeline")
+    print("EventFlow AI — Data Pipeline (with Cascade Analysis)")
     print("=" * 60)
-    
-    # Load
+
+    # ── Step 1: Load raw data ────────────────────────
     rows = load_raw_data(raw_path)
-    
-    # Clean
+
+    # ── Step 2: Clean & normalise ────────────────────
     cleaned = clean_data(rows)
-    
-    # Engineer features
+
+    # ── Step 3: Cascade co-occurrence matrix ─────────
+    print("\n[Cascade Analyzer] Building co-occurrence matrix...")
+    matrix = build_cooccurrence_matrix(raw_path)
+    save_matrix(matrix, output_dir)
+
+    # ── Step 4: Inject cascade scores into cleaned records ──
+    print("\n[Cascade Analyzer] Scoring each event for cascade probability...")
+    cleaned = compute_cascade_scores(cleaned, matrix)
+
+    # ── Step 5: Full feature engineering ────────────
     features = engineer_features(cleaned)
-    
-    # Save
+
+    # Propagate cascade_probability from enriched cleaned records
+    # (engineer_features re-builds features from cleaned, so we copy it over)
+    cascade_map = {r['id']: r['cascade_probability'] for r in cleaned}
+    for f in features:
+        f['cascade_probability'] = cascade_map.get(f['id'], 0.05)
+
+    # ── Step 6: Save ─────────────────────────────────
     save_processed(features, output_dir)
-    
-    # Summary stats
-    severities = [f['severity_score'] for f in features]
-    closures = [f['requires_road_closure'] for f in features]
-    print(f"\nSeverity Score: min={min(severities):.1f}, max={max(severities):.1f}, mean={sum(severities)/len(severities):.2f}")
-    print(f"Road Closure: {sum(closures)} / {len(closures)} ({sum(closures)/len(closures)*100:.1f}%)")
-    
+
+    # ── Summary stats ────────────────────────────────
+    severities   = [f['severity_score'] for f in features]
+    closures     = [f['requires_road_closure'] for f in features]
+    cascades     = [f['cascade_probability'] for f in features]
+    print(f"\nSeverity Score : min={min(severities):.1f}, "
+          f"max={max(severities):.1f}, mean={sum(severities)/len(severities):.2f}")
+    print(f"Road Closure   : {sum(closures)} / {len(closures)} "
+          f"({sum(closures)/len(closures)*100:.1f}%)")
+    print(f"Cascade Prob   : min={min(cascades):.3f}, "
+          f"max={max(cascades):.3f}, mean={sum(cascades)/len(cascades):.3f}")
+
     res_times = [f['resolution_hours'] for f in features if f['resolution_hours'] is not None]
     if res_times:
-        print(f"Resolution Time: mean={sum(res_times)/len(res_times):.2f}h, available for {len(res_times)} records")
-    
+        print(f"Resolution Time: mean={sum(res_times)/len(res_times):.2f}h, "
+              f"available for {len(res_times)} records")
+
     return features
 
 if __name__ == '__main__':

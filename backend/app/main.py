@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import auth, events, predictions, resources, diversions, feedback, analytics, dashboard
+from app.routers import auth, events, predictions, resources, diversions, feedback, analytics, dashboard, leaderboard
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -28,8 +28,9 @@ app.include_router(predictions.router, prefix="/api/predictions", tags=["Predict
 app.include_router(resources.router, prefix="/api/resources", tags=["Resources"])
 app.include_router(diversions.router, prefix="/api/diversions", tags=["Diversions"])
 app.include_router(feedback.router, prefix="/api/feedback", tags=["Feedback"])
-app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
-app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(analytics.router,   prefix="/api/analytics",   tags=["Analytics"])
+app.include_router(dashboard.router,   prefix="/api/dashboard",   tags=["Dashboard"])
+app.include_router(leaderboard.router, prefix="/api/leaderboard", tags=["Leaderboard"])
 
 @app.get("/")
 async def root():

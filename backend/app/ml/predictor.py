@@ -5,6 +5,9 @@ import json
 import math
 from datetime import datetime, timedelta
 from app.config import settings
+from app.ml.cascade_predictor import cascade_predictor, CascadeResult
+from app.ml.station_efficiency import load_leaderboard_cache, lookup_efficiency
+from app.ml.weather_service import get_current_rainfall_mm
 
 # Event cause severity mapping (must match training)
 CAUSE_SEVERITY = {
@@ -44,15 +47,17 @@ CITY_CENTER = (12.9871, 77.5960)
 class MLPredictor:
     def __init__(self):
         self.severity_model = None
-        self.closure_model = None
+        self.closure_model  = None
         self.duration_model = None
-        self.metadata = None
-        self._loaded = False
+        self.metadata       = None
+        self._loaded        = False
+        # Cascade predictor is a sibling singleton loaded separately
+        self._cascade_ready = False
     
     def load_models(self):
-        """Load all trained models."""
+        """Load all trained models and the cascade matrix."""
         models_dir = settings.MODELS_DIR
-        
+
         try:
             with open(os.path.join(models_dir, 'severity_model.pkl'), 'rb') as f:
                 self.severity_model = pickle.load(f)
@@ -67,6 +72,20 @@ class MLPredictor:
         except FileNotFoundError as e:
             print(f"Warning: Could not load models: {e}")
             self._loaded = False
+
+        # Load cascade matrix (non-fatal if missing)
+        cascade_matrix_path = os.path.join(
+            os.path.dirname(models_dir), "ml", "data",
+            "processed", "cascade_matrix.json"
+        )
+        self._cascade_ready = cascade_predictor.load_matrix(cascade_matrix_path)
+
+        # Step 7: Load police station leaderboard for efficiency feature
+        leaderboard_path = os.path.join(
+            os.path.dirname(models_dir), "data",
+            "processed", "leaderboard.json"
+        )
+        load_leaderboard_cache(leaderboard_path)
     
     def _haversine(self, lat1, lon1, lat2, lon2):
         R = 6371
@@ -75,8 +94,11 @@ class MLPredictor:
         a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
         return R * 2 * math.asin(math.sqrt(a))
     
-    def _build_features(self, event_data: dict) -> list:
-        """Build feature vector from event data."""
+    def _build_features(self, event_data: dict,
+                        cascade_prob: float = DEFAULT_CASCADE_PROB,
+                        station_efficiency: float = 1.0,
+                        rainfall_mm: float = 0.0) -> list:
+        """Build feature vector (27 base + cascade_probability + station_efficiency + rainfall_mm = 30 features)."""
         # Parse datetime
         dt_str = event_data.get('start_datetime', '')
         try:
@@ -88,14 +110,14 @@ class MLPredictor:
         except:
             ist = datetime.now()
         
-        hour = ist.hour
-        dow = ist.weekday()
+        hour  = ist.hour
+        dow   = ist.weekday()
         month = ist.month
         
         hour_sin = math.sin(2 * math.pi * hour / 24)
         hour_cos = math.cos(2 * math.pi * hour / 24)
-        dow_sin = math.sin(2 * math.pi * dow / 7)
-        dow_cos = math.cos(2 * math.pi * dow / 7)
+        dow_sin  = math.sin(2 * math.pi * dow / 7)
+        dow_cos  = math.cos(2 * math.pi * dow / 7)
         
         if 7 <= hour <= 10:
             time_slot = 0
@@ -108,35 +130,35 @@ class MLPredictor:
         else:
             time_slot = 4
         
-        is_peak = 1 if (7 <= hour <= 10 or 17 <= hour <= 21) else 0
+        is_peak   = 1 if (7 <= hour <= 10 or 17 <= hour <= 21) else 0
         is_weekend = 1 if dow >= 5 else 0
         is_holiday = 0
         
-        lat = float(event_data.get('latitude', 12.97))
-        lon = float(event_data.get('longitude', 77.59))
+        lat  = float(event_data.get('latitude', 12.97))
+        lon  = float(event_data.get('longitude', 77.59))
         dist = self._haversine(lat, lon, CITY_CENTER[0], CITY_CENTER[1])
         
-        corridor = event_data.get('corridor', 'Non-corridor')
+        corridor         = event_data.get('corridor', 'Non-corridor')
         is_main_corridor = 0 if corridor in ('Non-corridor', 'Unknown', '', None) else 1
-        corridor_freq = CORRIDOR_FREQ.get(corridor, 0.01)
-        zone_freq = 0.05
-        junction_freq = 0.01
+        corridor_freq    = CORRIDOR_FREQ.get(corridor, 0.01)
+        zone_freq        = 0.05
+        junction_freq    = 0.01
         
-        cause = event_data.get('event_cause', 'others').lower()
+        cause         = event_data.get('event_cause', 'others').lower()
         cause_encoded = CAUSE_LABELS.index(cause) if cause in CAUSE_LABELS else len(CAUSE_LABELS)
         cause_severity = CAUSE_SEVERITY.get(cause, 3.0)
         
-        priority = event_data.get('priority', 'Low')
+        priority         = event_data.get('priority', 'Low')
         priority_encoded = 1 if priority == 'High' else 0
         
         is_planned = 1 if event_data.get('event_type', '') == 'planned' else 0
-        desc = event_data.get('description', '') or ''
-        has_desc = 1 if len(desc) > 0 else 0
-        desc_len = min(len(desc), 500)
+        desc       = event_data.get('description', '') or ''
+        has_desc   = 1 if len(desc) > 0 else 0
+        desc_len   = min(len(desc), 500)
         
-        closure_rate_cause = HIST_CLOSURE_RATE.get(cause, 0.05)
-        closure_rate_corridor = 0.05  # default
-        avg_res = AVG_RESOLUTION.get(cause, 2.0)
+        closure_rate_cause     = HIST_CLOSURE_RATE.get(cause, 0.05)
+        closure_rate_corridor  = 0.05
+        avg_res                = AVG_RESOLUTION.get(cause, 2.0)
         
         features = [
             hour, hour_sin, hour_cos,
@@ -151,44 +173,95 @@ class MLPredictor:
             has_desc, desc_len,
             closure_rate_cause, closure_rate_corridor,
             avg_res,
+            # Feature 28: cascade probability (Step 3C)
+            cascade_prob,
+            # Feature 29: station efficiency score (Step 7)
+            station_efficiency,
+            # Feature 30: Real-Time Weather (rainfall in mm)
+            rainfall_mm,
         ]
-        
         return features
     
     def predict(self, event_data: dict) -> dict:
-        """Make prediction for an event."""
-        features = self._build_features(event_data)
-        
+        """Make prediction for an event, including cascade analysis."""
+
+        # ── Step 1: Compute cascade probability (Step 3C) ──
+        try:
+            ist_hour = datetime.now().hour  # quick fallback
+            dt_str = event_data.get('start_datetime', '')
+            if dt_str:
+                try:
+                    base_dt = datetime.strptime(
+                        dt_str.split('+')[0].split('.')[0].replace('T', ' '),
+                        '%Y-%m-%d %H:%M:%S'
+                    )
+                    ist_hour = (base_dt + timedelta(hours=5, minutes=30)).hour
+                except Exception:
+                    pass
+
+            cascade_result: CascadeResult = cascade_predictor.predict_cascade(
+                event_cause=event_data.get('event_cause', 'others'),
+                junction=event_data.get('junction', 'Unknown') or 'Unknown',
+                latitude=float(event_data.get('latitude', 12.97)),
+                longitude=float(event_data.get('longitude', 77.59)),
+                hour_ist=ist_hour,
+                priority=event_data.get('priority', 'Low'),
+            )
+            cascade_prob = cascade_result.cascade_probability
+        except Exception as exc:
+            print(f"[Predictor] Cascade scoring failed: {exc}")
+            cascade_prob   = DEFAULT_CASCADE_PROB
+            cascade_result = None
+
+        # ── Step 7: Look up police station efficiency score ──────────────────
+        station = event_data.get('police_station', 'Unknown') or 'Unknown'
+        station_eff = lookup_efficiency(station)
+
+        # ── Step 8: Fetch real-time weather data ─────────────────────────────
+        lat = float(event_data.get('latitude', CITY_CENTER[0]))
+        lon = float(event_data.get('longitude', CITY_CENTER[1]))
+        rainfall = get_current_rainfall_mm(lat, lon)
+
+        # ── Step 2: Build feature vector (30 features) ─────────────────────
+        features = self._build_features(event_data,
+                                        cascade_prob=cascade_prob,
+                                        station_efficiency=station_eff,
+                                        rainfall_mm=rainfall)
+
+        # ── Step 3: Run ML models ──────────────────────────────────────
         if self._loaded and self.severity_model:
-            severity = self.severity_model.predict_one(features)
+            severity     = self.severity_model.predict_one(features)
             closure_prob = self.closure_model.predict_one(features)
-            duration = self.duration_model.predict_one(features)
+            duration     = self.duration_model.predict_one(features)
         else:
             # Fallback: rule-based prediction
-            cause = event_data.get('event_cause', 'others').lower()
-            severity = CAUSE_SEVERITY.get(cause, 3.0)
+            cause        = event_data.get('event_cause', 'others').lower()
+            severity     = CAUSE_SEVERITY.get(cause, 3.0)
             closure_prob = HIST_CLOSURE_RATE.get(cause, 0.05)
-            duration = AVG_RESOLUTION.get(cause, 2.0)
-        
-        # Clamp values
-        severity = max(0, min(10, severity))
+            duration     = AVG_RESOLUTION.get(cause, 2.0)
+            # Still apply cascade duration multiplier in fallback mode
+            if cascade_result:
+                duration *= cascade_result.duration_multiplier
+
+        # ── Step 4: Clamp values ───────────────────────────────────────
+        severity     = max(0, min(10, severity))
         closure_prob = max(0, min(1, closure_prob))
-        duration = max(0.1, min(72, duration))
-        
-        # Apply event-specific boosts
+        duration     = max(0.1, min(72, duration))
+
+        # ── Step 5: Event-specific hard boosts ────────────────────────
         cause = event_data.get('event_cause', '').lower()
         if cause in ('public_event', 'procession', 'vip_movement', 'protest'):
             severity = max(severity, 6.0)
             if cause == 'vip_movement':
-                severity = max(severity, 8.0)
+                severity     = max(severity, 8.0)
                 closure_prob = max(closure_prob, 0.8)
-        
+
         if event_data.get('requires_road_closure'):
-            severity *= 1.2
-            severity = min(severity, 10.0)
-            closure_prob = max(closure_prob, 0.7)
-        
-        # Severity label
+            severity     *= 1.2
+            severity      = min(severity, 10.0)
+            closure_prob  = max(closure_prob, 0.7)
+
+        # ── Step 6: Labels and confidence ────────────────────────────
         if severity <= 3:
             label = "Low"
         elif severity <= 5:
@@ -197,19 +270,32 @@ class MLPredictor:
             label = "High"
         else:
             label = "Critical"
-        
-        # Confidence
+
         confidence = 0.85 if self._loaded else 0.70
-        
-        return {
-            'severity_score': round(severity, 2),
-            'severity_label': label,
-            'closure_probability': round(closure_prob, 4),
-            'estimated_duration_hours': round(duration, 2),
-            'confidence': confidence,
-            'model_version': self.metadata.get('model_version', 'v1.0.0') if self.metadata else 'v1.0.0-fallback',
+
+        # ── Step 7: Build response dict ───────────────────────────────
+        response = {
+            'severity_score':            round(severity, 2),
+            'severity_label':            label,
+            'closure_probability':       round(closure_prob, 4),
+            'estimated_duration_hours':  round(duration, 2),
+            'confidence':                confidence,
+            'model_version':             (
+                self.metadata.get('model_version', 'v2.0.0')
+                if self.metadata else 'v2.0.0-fallback'
+            ),
+            # Step 3C cascade data (exposed to API)
+            'cascade_probability':       cascade_prob,
+            'cascade_risk_level':        cascade_result.risk_level if cascade_result else 'Unknown',
+            'cascade_affected_junctions': cascade_result.likely_affected_junctions if cascade_result else [],
+            'cascade_duration_multiplier': cascade_result.duration_multiplier if cascade_result else 1.0,
+            'cascade_explanation':       cascade_result.explanation if cascade_result else '',
         }
+        return response
 
 
 # Singleton instance
 predictor = MLPredictor()
+
+# Constant used in predict() for fallback cascade prob
+DEFAULT_CASCADE_PROB = 0.05

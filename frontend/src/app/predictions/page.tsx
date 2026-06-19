@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { predictionService } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
-import {
   Zap, ShieldAlert, Users, Navigation2,
   HardHat, Car, Tent, MapPin, ArrowRight,
-  AlertTriangle, CheckCircle2, Activity
+  AlertTriangle, CheckCircle2, Activity,
+  CloudRain, Workflow, GitBranch, ShieldCheck
 } from "lucide-react";
 
 const BENGALURU_LOCATIONS = [
@@ -42,7 +42,25 @@ const MOCK_RESULT = {
   closure_probability: 0.87,
   estimated_duration_hours: 4.5,
   confidence: 0.92,
-  resource_recommendation: { traffic_police: 24, barricades: 40, checkpoints: 6, emergency_units: 2, total_estimated_cost: 34800 },
+  rainfall_mm: 12.5,
+  cascade_info: {
+    cascade_probability: 0.68,
+    risk_level: "High",
+    likely_affected_junctions: ["Silk Board Junction", "Koramangala Water Tank"],
+    duration_multiplier: 1.45,
+    explanation: "High risk of secondary congestion due to water logging in peak hours."
+  },
+  resource_recommendation: { 
+    traffic_police: 24, barricades: 40, checkpoints: 6, emergency_units: 2, 
+    total_estimated_cost: 34800,
+    optimization_method: "StackingEnsemble_XGB",
+    resource_efficiency_score: 1.18,
+    conditional_forecast: [
+      { police_deployed: 10, estimated_duration_hours: 6.2, estimated_cost_inr: 28000, efficiency_ratio: 0.85 },
+      { police_deployed: 24, estimated_duration_hours: 4.5, estimated_cost_inr: 34800, efficiency_ratio: 1.18 },
+      { police_deployed: 35, estimated_duration_hours: 4.1, estimated_cost_inr: 42000, efficiency_ratio: 0.95 }
+    ]
+  },
   diversion_routes: [
     { route_name: "Via Hosur Road — Bypass Elevated", distance_km: 3.2, estimated_time_min: 18, congestion_level: "low" },
     { route_name: "Via 100ft Road — Koramangala",    distance_km: 2.7, estimated_time_min: 24, congestion_level: "moderate" },
@@ -260,7 +278,7 @@ export default function PredictionsPage() {
                         {[
                           { label: "Severity", value: `${result.severity_score.toFixed(1)}/10` },
                           { label: "Closure Prob", value: `${(result.closure_probability * 100).toFixed(0)}%` },
-                          { label: "Est. Duration", value: `${result.estimated_duration_hours}h` },
+                          { label: "Est. Duration", value: `${result.estimated_duration_hours.toFixed(1)}h` },
                         ].map(({ label, value }) => (
                           <div key={label} className="text-center">
                             <p className="text-[10px] text-slate-600 mb-1">{label}</p>
@@ -270,6 +288,44 @@ export default function PredictionsPage() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Cascade & Weather Banner */}
+                  {(result.cascade_info || result.rainfall_mm !== undefined) && (
+                    <div className="grid grid-cols-12 gap-4">
+                      {result.cascade_info && (
+                        <div className="col-span-8 glass-card p-4 border-l-2 border-l-orange-500">
+                          <div className="flex items-start gap-3">
+                            <GitBranch className="text-orange-400 mt-1" size={18} />
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-[14px] font-semibold text-white">Congestion Cascade Risk</h4>
+                                <span className={`badge ${result.cascade_info.risk_level === 'High' ? 'badge-red' : 'badge-yellow'}`}>
+                                  {(result.cascade_info.cascade_probability * 100).toFixed(0)}% Probability
+                                </span>
+                              </div>
+                              <p className="text-[12px] text-slate-400 mt-1">{result.cascade_info.explanation}</p>
+                              {result.cascade_info.likely_affected_junctions.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                  <span className="text-[11px] text-slate-500">Watch:</span>
+                                  {result.cascade_info.likely_affected_junctions.map((j: string) => (
+                                    <span key={j} className="text-[10px] mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-300">{j}</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {result.rainfall_mm !== undefined && (
+                        <div className="col-span-4 glass-card p-4 flex flex-col justify-center items-center text-center">
+                          <CloudRain size={20} className="text-blue-400 mb-2" />
+                          <p className="text-[11px] text-slate-500 uppercase tracking-wide">Live Weather API</p>
+                          <p className="text-[18px] mono font-bold text-white">{result.rainfall_mm} <span className="text-[12px] text-slate-500 font-normal">mm/h</span></p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-4">
 
@@ -294,10 +350,37 @@ export default function PredictionsPage() {
                           </div>
                         ))}
                       </div>
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/[0.06] border border-blue-500/15">
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-blue-500/[0.06] border border-blue-500/15 mb-4">
                         <span className="text-[12px] text-slate-500">Estimated Budget</span>
                         <span className="mono text-[14px] font-bold text-emerald-400">₹{result.resource_recommendation.total_estimated_cost.toLocaleString()}</span>
                       </div>
+
+                      {/* ML Efficiency & Conditional Forecast */}
+                      {result.resource_recommendation.optimization_method && (
+                        <div className="space-y-3 pt-3 border-t border-white/[0.06]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[12px] font-medium text-slate-400 flex items-center gap-1.5"><Workflow size={12}/> ML Optimization</span>
+                            <span className="badge badge-blue">{result.resource_recommendation.optimization_method}</span>
+                          </div>
+                          
+                          {result.resource_recommendation.conditional_forecast && (
+                            <div className="bg-[#0f1117] rounded-lg border border-white/[0.04] overflow-hidden">
+                              <div className="grid grid-cols-3 bg-white/[0.02] p-2 border-b border-white/[0.04] text-[10px] text-slate-500 uppercase font-medium">
+                                <div>Police</div>
+                                <div>Duration</div>
+                                <div>Efficiency</div>
+                              </div>
+                              {result.resource_recommendation.conditional_forecast.map((f: any, i: number) => (
+                                <div key={i} className={`grid grid-cols-3 p-2 text-[12px] ${f.police_deployed === result.resource_recommendation.traffic_police ? 'bg-blue-500/10 text-white font-semibold' : 'text-slate-400'}`}>
+                                  <div className="mono">{f.police_deployed}</div>
+                                  <div className="mono">{f.estimated_duration_hours.toFixed(1)}h</div>
+                                  <div className={`mono ${f.efficiency_ratio > 1 ? 'text-emerald-400' : 'text-slate-500'}`}>{f.efficiency_ratio.toFixed(2)}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Diversion routes */}
