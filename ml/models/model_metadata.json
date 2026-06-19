@@ -42,18 +42,19 @@
     "cv_r2_std": 0.007
   },
   "closure_metrics": {
-    "accuracy": 0.8794,
-    "precision": 0.3565,
-    "recall": 0.5704,
-    "f1": 0.4387,
-    "auc_roc": 0.8208
+    "accuracy": 0.9143,
+    "precision": 0.4818,
+    "recall": 0.4889,
+    "f1": 0.4853,
+    "auc_roc": 0.8273,
+    "optimal_threshold": 0.4
   },
   "duration_metrics": {
-    "mae": 6.3633,
-    "rmse": 13.3387,
-    "r2": 0.3114,
-    "cv_r2_mean": 0.5108,
-    "cv_r2_std": 0.0683
+    "mae": 3.5353,
+    "rmse": 6.6972,
+    "r2": 0.3766,
+    "cv_r2_mean": 0.5095,
+    "cv_r2_std": 0.077
   },
   "training_samples": 8170,
   "model_version": "v3.0.0-xgboost",

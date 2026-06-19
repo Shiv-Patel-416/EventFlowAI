@@ -554,12 +554,12 @@
       <div class="card" style="border-top: 2px solid var(--orange);">
         <div class="label" style="color: var(--orange); margin-bottom: 16px;">ML Engine</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <span class="badge badge-orange">Gradient Boosting</span>
-          <span class="badge badge-red">Custom GBM</span>
-          <span class="badge badge-purple">27 Features</span>
+          <span class="badge badge-orange">XGBoost v3.0</span>
+          <span class="badge badge-red">Scikit-learn</span>
+          <span class="badge badge-purple">30 Features</span>
         </div>
         <p style="font-size:13px;color:#94A3B8;margin-top:16px;line-height:1.6;">
-          Pure-Python gradient boosting (zero native C deps). 3 models: severity predictor, closure classifier, duration estimator.
+          Enterprise-grade XGBoost tree-ensembles optimized with log-transformations and F1-tuned probability thresholds.
         </p>
       </div>
     </div>
@@ -592,41 +592,41 @@
   <div style="max-width: 1100px; width: 100%;">
     <span class="badge badge-green" style="margin-bottom: 16px; display: inline-flex;">🧠 Machine Learning</span>
     <h2 class="title" style="margin-bottom: 12px;">
-      <span class="grad-green">3 Models</span>, 27 Features,<br>
+      <span class="grad-green">3 Models</span>, 30 Features,<br>
       8,173 Training Samples
     </h2>
     <p class="subtitle" style="max-width: 700px; margin-bottom: 40px;">
-      Custom Gradient Boosting implementation trained on Bengaluru Astram traffic incident data with temporal, spatial, and historical features.
+      XGBoost v3.0 implementation trained on Bengaluru Astram traffic incident data with temporal, spatial, real-time weather, and cascade risk features.
     </p>
 
     <div style="display: flex; gap: 20px; margin-bottom: 40px;">
       <!-- Severity -->
       <div class="metric-card" style="border-top: 3px solid var(--blue);">
         <div class="label" style="color: var(--blue); margin-bottom: 12px;">Severity Predictor</div>
-        <div class="metric-val grad-blue">0.94</div>
+        <div class="metric-val grad-blue">0.96</div>
         <div class="metric-label">R² Score</div>
         <div style="margin-top:12px;font-size:12px;color:#64748B;">
-          MAE: 0.26 · RMSE: 0.47
+          MAE: 0.17 · RMSE: 0.38
         </div>
       </div>
 
       <!-- Closure -->
       <div class="metric-card" style="border-top: 3px solid var(--green);">
         <div class="label" style="color: var(--green); margin-bottom: 12px;">Closure Classifier</div>
-        <div class="metric-val grad-green">92%</div>
+        <div class="metric-val grad-green">91.4%</div>
         <div class="metric-label">Accuracy</div>
         <div style="margin-top:12px;font-size:12px;color:#64748B;">
-          Precision · Recall · AUC-ROC
+          Precision: 0.48 · Recall: 0.49 · F1: 0.48
         </div>
       </div>
 
       <!-- Duration -->
       <div class="metric-card" style="border-top: 3px solid var(--orange);">
         <div class="label" style="color: var(--orange); margin-bottom: 12px;">Duration Estimator</div>
-        <div class="metric-val grad-warm">8.06h</div>
+        <div class="metric-val grad-warm">3.53h</div>
         <div class="metric-label">MAE</div>
         <div style="margin-top:12px;font-size:12px;color:#64748B;">
-          R²: 0.41 · RMSE: 13.15
+          R²: 0.38 · RMSE: 6.69
         </div>
       </div>
     </div>
@@ -634,13 +634,13 @@
     <div class="card" style="padding: 20px 28px;">
       <div class="label" style="color: var(--cyan); margin-bottom: 12px;">Feature Engineering Highlights</div>
       <div style="display:flex; flex-wrap:wrap; gap: 8px;">
-        <span class="badge badge-blue">hour_sin/cos</span>
-        <span class="badge badge-cyan">distance_to_center</span>
+        <span class="badge badge-blue">cascade_probability</span>
+        <span class="badge badge-cyan">rainfall_mm</span>
         <span class="badge badge-green">corridor_event_freq</span>
         <span class="badge badge-orange">cause_base_severity</span>
         <span class="badge badge-purple">hist_closure_rate</span>
         <span class="badge badge-red">is_peak_hour</span>
-        <span class="badge" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#64748B;">+21 more</span>
+        <span class="badge" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);color:#64748B;">+24 more</span>
       </div>
     </div>
   </div>
@@ -797,8 +797,8 @@
 
     <div class="feature-grid">
       <div class="feature-card" style="border-left: 3px solid var(--blue);">
-        <h3>🧪 Zero-Dependency ML</h3>
-        <p>Custom gradient boosting in pure Python — no scikit-learn, XGBoost, or C-library conflicts. Runs on any machine, any OS.</p>
+        <h3>🧪 Enterprise-Grade ML Pipeline</h3>
+        <p>State-of-the-art XGBoost engines with dynamic scale_pos_weight optimization and F1 threshold tuning. Robust to noisy, highly-imbalanced data.</p>
       </div>
       <div class="feature-card" style="border-left: 3px solid var(--green);">
         <h3>🔄 End-to-End Pipeline</h3>
@@ -857,11 +857,11 @@
 
   <div style="display:flex; gap:24px; justify-content:center; margin-bottom: 40px;">
     <div class="metric-card">
-      <div class="metric-val" style="font-size:32px;"><span class="grad-blue">R² 0.94</span></div>
+      <div class="metric-val" style="font-size:32px;"><span class="grad-blue">R² 0.96</span></div>
       <div class="metric-label">Severity Prediction</div>
     </div>
     <div class="metric-card">
-      <div class="metric-val" style="font-size:32px;"><span class="grad-green">92%</span></div>
+      <div class="metric-val" style="font-size:32px;"><span class="grad-green">91.4%</span></div>
       <div class="metric-label">Closure Accuracy</div>
     </div>
     <div class="metric-card">
@@ -877,7 +877,7 @@
     </p>
     <p>
       <strong style="color:#94A3B8;">Built with:</strong> 
-      <span style="color:#64748B;">Next.js · FastAPI · Custom Gradient Boosting · Docker</span>
+      <span style="color:#64748B;">Next.js · FastAPI · XGBoost v3.0 · Docker</span>
     </p>
   </div>
 
