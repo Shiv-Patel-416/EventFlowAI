@@ -60,7 +60,7 @@ def _load_events():
             except Exception:
                 continue
 
-@router.get("", response_model=EventListResponse)
+@router.get("", response_model=None)
 async def list_events(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -72,51 +72,55 @@ async def list_events(
     zone: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(Event)
-    
-    if status:
-        query = query.filter(Event.status == status)
-    if event_cause:
-        query = query.filter(Event.event_cause == event_cause.lower())
-    if event_type:
-        query = query.filter(Event.event_type == event_type)
-    if corridor:
-        query = query.filter(Event.corridor == corridor)
-    if priority:
-        query = query.filter(Event.priority == priority)
-    if zone:
-        query = query.filter(Event.zone == zone)
-    
-    total = query.count()
-    start = (page - 1) * page_size
-    page_events = query.offset(start).limit(page_size).all()
-    
-    return EventListResponse(
-        events=[EventResponse(
-            id=str(e.id),
-            external_id=e.external_id,
-            event_type=e.event_type,
-            latitude=e.latitude,
-            longitude=e.longitude,
-            address=e.address,
-            event_cause=e.event_cause,
-            requires_road_closure=e.requires_road_closure,
-            start_datetime=e.start_datetime.isoformat() if e.start_datetime else "",
-            end_datetime=e.end_datetime.isoformat() if e.end_datetime else None,
-            status=e.status,
-            priority=e.priority,
-            corridor=e.corridor,
-            zone=e.zone,
-            junction=e.junction,
-            police_station=e.police_station,
-            description=e.description,
-            veh_type=e.veh_type,
-            created_at=e.created_at.isoformat() if e.created_at else None
-        ) for e in page_events],
-        total=total,
-        page=page,
-        page_size=page_size
-    )
+    try:
+        query = db.query(Event)
+        
+        if status:
+            query = query.filter(Event.status == status)
+        if event_cause:
+            query = query.filter(Event.event_cause == event_cause.lower())
+        if event_type:
+            query = query.filter(Event.event_type == event_type)
+        if corridor:
+            query = query.filter(Event.corridor == corridor)
+        if priority:
+            query = query.filter(Event.priority == priority)
+        if zone:
+            query = query.filter(Event.zone == zone)
+        
+        total = query.count()
+        start = (page - 1) * page_size
+        page_events = query.offset(start).limit(page_size).all()
+        
+        return {
+            "events": [{
+                "id": str(e.id),
+                "external_id": e.external_id,
+                "event_type": e.event_type,
+                "latitude": e.latitude,
+                "longitude": e.longitude,
+                "address": e.address,
+                "event_cause": e.event_cause,
+                "requires_road_closure": e.requires_road_closure,
+                "start_datetime": e.start_datetime.isoformat() if e.start_datetime else "",
+                "end_datetime": e.end_datetime.isoformat() if e.end_datetime else None,
+                "status": e.status,
+                "priority": e.priority,
+                "corridor": e.corridor,
+                "zone": e.zone,
+                "junction": e.junction,
+                "police_station": e.police_station,
+                "description": e.description,
+                "veh_type": e.veh_type,
+                "created_at": e.created_at.isoformat() if e.created_at else None
+            } for e in page_events],
+            "total": total,
+            "page": page,
+            "page_size": page_size
+        }
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 @router.get("/stats")
 async def event_stats(db: Session = Depends(get_db)):
@@ -141,24 +145,28 @@ async def event_stats(db: Session = Depends(get_db)):
 
 @router.get("/heatmap/data")
 async def heatmap_data(db: Session = Depends(get_db)):
-    events = db.query(Event.latitude, Event.longitude, Event.event_cause).all()
-    
-    points = []
-    severity = {"vehicle_breakdown": 0.3, "accident": 0.8, "public_event": 0.9,
-                "procession": 0.85, "vip_movement": 0.95, "protest": 0.9,
-                "construction": 0.5, "tree_fall": 0.6, "water_logging": 0.5,
-                "congestion": 0.7, "pot_holes": 0.3, "road_conditions": 0.4,
-                "others": 0.3}
-    
-    for lat, lon, cause in events:
-        points.append({
-            "latitude": lat,
-            "longitude": lon,
-            "intensity": severity.get(cause, 0.3),
-            "event_cause": cause
-        })
-    
-    return {"points": points, "total": len(points)}
+    try:
+        events = db.query(Event.latitude, Event.longitude, Event.event_cause).all()
+        
+        points = []
+        severity = {"vehicle_breakdown": 0.3, "accident": 0.8, "public_event": 0.9,
+                    "procession": 0.85, "vip_movement": 0.95, "protest": 0.9,
+                    "construction": 0.5, "tree_fall": 0.6, "water_logging": 0.5,
+                    "congestion": 0.7, "pot_holes": 0.3, "road_conditions": 0.4,
+                    "others": 0.3}
+        
+        for lat, lon, cause in events:
+            points.append({
+                "latitude": lat,
+                "longitude": lon,
+                "intensity": severity.get(cause, 0.3),
+                "event_cause": cause
+            })
+        
+        return {"points": points, "total": len(points)}
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "traceback": traceback.format_exc()}
 
 @router.get("/{event_id}", response_model=EventResponse)
 async def get_event(event_id: str, db: Session = Depends(get_db)):
