@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     DATA_DIR: str = os.getenv("DATA_DIR", os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "ml", "data"))
     
     # CORS
-    CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000", "http://frontend:3000"]
+    CORS_ORIGINS: list = ["http://localhost:3000", "http://127.0.0.1:3000", "http://frontend:3000","https://event-flow-ai-tau.vercel.app"]
     
     class Config:
         env_file = ".env"
