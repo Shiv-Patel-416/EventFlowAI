@@ -5,11 +5,60 @@ from sqlalchemy import func
 from app.schemas.schemas import EventCreate, EventResponse, EventListResponse
 from app.database import get_db
 from app.models.event import Event
+from app.models.user import User
 from typing import Optional
 import uuid
+import csv
+import os
 from datetime import datetime
 
 router = APIRouter()
+
+# Restored for compatibility with other mocked routers (dashboard, analytics)
+EVENTS_STORE = []
+
+def _load_events():
+    """Load events from raw CSV on startup for mock routers."""
+    global EVENTS_STORE
+    if EVENTS_STORE:
+        return
+    
+    raw_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'ml', 'data', 'raw', 'events_raw.csv')
+    if not os.path.exists(raw_path):
+        return
+    
+    with open(raw_path, encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                lat = float(row.get('latitude', 0))
+                lon = float(row.get('longitude', 0))
+                if lat == 0 or lon == 0:
+                    continue
+                
+                EVENTS_STORE.append({
+                    "id": row.get('id', str(uuid.uuid4())),
+                    "external_id": row.get('id'),
+                    "event_type": row.get('event_type', 'unplanned'),
+                    "latitude": lat,
+                    "longitude": lon,
+                    "address": row.get('address', ''),
+                    "event_cause": row.get('event_cause', 'others').lower(),
+                    "requires_road_closure": row.get('requires_road_closure', 'FALSE').upper() == 'TRUE',
+                    "start_datetime": row.get('start_datetime', ''),
+                    "end_datetime": row.get('end_datetime') if row.get('end_datetime', 'NULL') != 'NULL' else None,
+                    "status": row.get('status', 'active'),
+                    "priority": row.get('priority', 'Low'),
+                    "corridor": row.get('corridor', 'Non-corridor'),
+                    "zone": row.get('zone', '') if row.get('zone', 'NULL') != 'NULL' else None,
+                    "junction": row.get('junction', '') if row.get('junction', 'NULL') != 'NULL' else None,
+                    "police_station": row.get('police_station', '') if row.get('police_station', 'NULL') != 'NULL' else None,
+                    "description": row.get('description', '') if row.get('description', 'NULL') != 'NULL' else None,
+                    "veh_type": row.get('veh_type', '') if row.get('veh_type', 'NULL') != 'NULL' else None,
+                    "created_at": row.get('created_date', ''),
+                })
+            except Exception:
+                continue
 
 @router.get("", response_model=EventListResponse)
 async def list_events(
