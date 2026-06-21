@@ -9,6 +9,9 @@ from app.ml.cascade_predictor import cascade_predictor, CascadeResult
 from app.ml.station_efficiency import load_leaderboard_cache, lookup_efficiency
 from app.ml.weather_service import get_current_rainfall_mm
 
+# Constant used in predict() for fallback cascade prob
+DEFAULT_CASCADE_PROB = 0.05
+
 # Event cause severity mapping (must match training)
 CAUSE_SEVERITY = {
     "vehicle_breakdown": 2.0, "pot_holes": 2.5, "road_conditions": 3.0,
@@ -342,6 +345,3 @@ class MLPredictor:
 
 # Singleton instance
 predictor = MLPredictor()
-
-# Constant used in predict() for fallback cascade prob
-DEFAULT_CASCADE_PROB = 0.05

@@ -13,7 +13,7 @@ backend_path = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__fi
 sys.path.insert(0, backend_path)
 
 # Import model classes from the backend module
-from app.ml.model_classes import GradientBoostingModel, SimpleDecisionStump
+from app.ml.model_classes import GradientBoostingModel, SimpleDecisionStump  # type: ignore
 
 def load_features(filepath):
     features = []
