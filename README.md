@@ -58,6 +58,20 @@ If you do this, the model will rely on the geographical features. You will see t
 
 ---
 
+## 🧪 How to Upload Custom Datasets (For Judges)
+The application currently uses a production-ready PostgreSQL database hosted on **Supabase**. If you would like to test the live Vercel map by uploading your own CSV dataset of traffic incidents, you can easily do so using the built-in database seeder script.
+
+1. Locate the file `ml/data/raw/events_raw.csv` in the project directory.
+2. Replace its contents with your own dataset (ensure the column names match the existing format, such as `latitude`, `longitude`, `event_cause`, etc).
+3. Run the seeder script from your terminal:
+   ```bash
+   python seed_supabase.py
+   ```
+4. When prompted, enter the Supabase Connection Pooler URL. 
+5. The script uses a safe batch-uploader and `ON CONFLICT DO NOTHING` logic, so it will securely upload thousands of your custom rows directly to the cloud without crashing or duplicating data. Once the script finishes, simply refresh the live Vercel website to see your custom dots appear on the map!
+
+---
+
 ## 💻 What is being used inside? (Tech Stack)
 - **Frontend:** Next.js 14, TailwindCSS, Framer Motion, Leaflet.js
 - **Backend:** FastAPI, Python, SQLAlchemy, PostgreSQL
